@@ -1,0 +1,19 @@
+import { PrismaClient } from "@prisma/client";
+import { PrismaLibSql } from "@prisma/adapter-libsql";
+
+// Prisma 7 is Rust-engine-free and requires a driver adapter. libSQL works for both
+// a local `file:` DB (dev) and Turso (prod) — swap the env vars, not the code.
+const url =
+  process.env.TURSO_DATABASE_URL ??
+  process.env.DATABASE_URL ??
+  "file:./prisma/dev.db";
+const authToken = process.env.TURSO_AUTH_TOKEN || undefined;
+
+const adapter = new PrismaLibSql({ url, authToken });
+
+const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
+
+export const prisma =
+  globalForPrisma.prisma ?? new PrismaClient({ adapter });
+
+if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;

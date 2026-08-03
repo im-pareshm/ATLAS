@@ -1,0 +1,122 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { prisma } from "@/lib/prisma";
+import { requireUserId } from "@/lib/session";
+import { rupeesToPaise } from "@/lib/money";
+import { ensureRecurringTransactionsGenerated } from "@/lib/recurring";
+import { recurringSchema, recurringUpdateSchema } from "@/lib/validations";
+
+export type ActionState = { error?: string; ok?: boolean };
+
+// Recurring templates are for outflows/savings, not the manual income figure.
+const RECURRING_KINDS = ["KNOWN_EXPENSE", "SAVINGS", "DISCRETIONARY"];
+
+function revalidateAll() {
+  revalidatePath("/recurring");
+  revalidatePath("/known");
+  revalidatePath("/expenses");
+  revalidatePath("/");
+}
+
+async function assertCategory(userId: string, categoryId: string) {
+  return prisma.category.findFirst({
+    where: { id: categoryId, userId, group: { kind: { in: RECURRING_KINDS } } },
+    select: { id: true },
+  });
+}
+
+export async function createRecurring(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const userId = await requireUserId();
+  const parsed = recurringSchema.safeParse({
+    categoryId: formData.get("categoryId"),
+    description: formData.get("description") || undefined,
+    amount: formData.get("amount"),
+  });
+  if (!parsed.success) return { error: parsed.error.issues[0].message };
+
+  if (!(await assertCategory(userId, parsed.data.categoryId))) {
+    return { error: "Pick a valid category (known expense, savings, or discretionary)." };
+  }
+
+  await prisma.recurringTransaction.create({
+    data: {
+      userId,
+      categoryId: parsed.data.categoryId,
+      description: parsed.data.description ?? null,
+      amount: rupeesToPaise(parsed.data.amount),
+      frequency: "MONTHLY",
+      isActive: true,
+    },
+  });
+
+  await ensureRecurringTransactionsGenerated(userId);
+  revalidateAll();
+  return { ok: true };
+}
+
+export async function updateRecurring(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const userId = await requireUserId();
+  const parsed = recurringUpdateSchema.safeParse({
+    id: formData.get("id"),
+    categoryId: formData.get("categoryId"),
+    description: formData.get("description") || undefined,
+    amount: formData.get("amount"),
+  });
+  if (!parsed.success) return { error: parsed.error.issues[0].message };
+
+  const owned = await prisma.recurringTransaction.findFirst({
+    where: { id: parsed.data.id, userId },
+    select: { id: true },
+  });
+  if (!owned) return { error: "Template not found." };
+  if (!(await assertCategory(userId, parsed.data.categoryId))) {
+    return { error: "Pick a valid category." };
+  }
+
+  await prisma.recurringTransaction.update({
+    where: { id: parsed.data.id },
+    data: {
+      categoryId: parsed.data.categoryId,
+      description: parsed.data.description ?? null,
+      amount: rupeesToPaise(parsed.data.amount),
+    },
+  });
+  revalidateAll();
+  return { ok: true };
+}
+
+export async function toggleRecurring(formData: FormData): Promise<void> {
+  const userId = await requireUserId();
+  const id = String(formData.get("id") ?? "");
+  const t = await prisma.recurringTransaction.findFirst({
+    where: { id, userId },
+    select: { id: true, isActive: true },
+  });
+  if (!t) return;
+  await prisma.recurringTransaction.update({
+    where: { id },
+    data: { isActive: !t.isActive },
+  });
+  if (!t.isActive) await ensureRecurringTransactionsGenerated(userId);
+  revalidateAll();
+}
+
+export async function deleteRecurring(formData: FormData): Promise<void> {
+  const userId = await requireUserId();
+  const id = String(formData.get("id") ?? "");
+  const owned = await prisma.recurringTransaction.findFirst({
+    where: { id, userId },
+    select: { id: true },
+  });
+  if (!owned) return;
+  // Generated transactions keep their rows (recurringSourceId set null via schema).
+  await prisma.recurringTransaction.delete({ where: { id } });
+  revalidateAll();
+}

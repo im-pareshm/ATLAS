@@ -1,0 +1,122 @@
+@import "tailwindcss";
+
+/* ATLAS design tokens — see UI_DESIGN_GUIDE.md */
+@theme {
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+
+  /* grounds */
+  --color-ground: #eef2f0;
+  --color-card: #ffffff;
+  --color-inputbg: #f6f9f7;
+
+  /* text */
+  --color-ink: #050505;
+  --color-strong: #2e3230;
+  --color-secondary: #4a504e;
+  --color-muted: #6a706e;
+  --color-faint: #99a29e;
+  --color-faint2: #a7b0ac;
+  --color-struck: #b6b9c4;
+  --color-icondim: #b9c0bc;
+
+  /* brand / positive (teal) */
+  --color-teal: #4f7c6b;
+  --color-teal-hover: #3f5f52;
+  --color-teal-hero: #6f9686;
+  --color-mint: #c9eddc;
+  --color-mint-tint: #e4efe9;
+
+  /* accent / negative (clay) */
+  --color-clay: #b07a68;
+  --color-clay-tint: #f3e7e1;
+  --color-clay-neg: #e6b9ab;
+
+  /* neutrals */
+  --color-greyteal: #82968c;
+  --color-dim: #6a706e;
+
+  /* lines */
+  --color-line: #e2e8e5;
+  --color-inputborder: #dde5e1;
+  --color-divider: #eef2f0;
+  --color-track: #e9efec;
+
+  --radius-card: 16px;
+
+  --shadow-card: 0 1px 3px rgba(26, 28, 40, 0.05);
+  --shadow-login: 0 2px 4px rgba(26, 28, 40, 0.04), 0 24px 48px -28px rgba(26, 28, 40, 0.32);
+  --shadow-hero: 0 12px 30px -14px rgba(79, 124, 107, 0.67);
+}
+
+/* Dark theme — applied when <html data-theme="dark"> (set by the pre-paint script
+   from stored preference or system). Overrides the neutral tokens; brand teal/clay
+   stay vivid. Tint tokens get dark variants for class-based chips/pills. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-ground: #0e1311;
+  --color-card: #171e1b;
+  --color-inputbg: #1e2521;
+
+  --color-ink: #eef2f0;
+  --color-strong: #dfe6e2;
+  --color-secondary: #b4beb9;
+  --color-muted: #8b958f;
+  --color-faint: #6c766f;
+  --color-faint2: #79837c;
+  --color-struck: #5f6b64;
+  --color-icondim: #6c766f;
+
+  --color-mint-tint: #1d2c25;
+  --color-clay-tint: #2e211c;
+
+  --color-line: #2a322e;
+  --color-inputborder: #313a35;
+  --color-divider: #232a26;
+  --color-track: #2a322e;
+
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-login: 0 2px 4px rgba(0, 0, 0, 0.3), 0 24px 48px -28px rgba(0, 0, 0, 0.7);
+}
+
+body {
+  background: var(--color-ground);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* tabular figures for all monetary numbers */
+.num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes barGrow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.animate-fade-up {
+  animation: fadeUp 0.45s ease both;
+}
+
+.animate-bar-grow {
+  transform-origin: left;
+  animation: barGrow 0.5s ease both;
+}

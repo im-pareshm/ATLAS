@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Hanken+Grotesk:wght@400;500;600;700&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:'Hanken Grotesk',system-ui,sans-serif;color:#1c1a17;background:#efeae0;-webkit-font-smoothing:antialiased}
+a{color:#2f6b4f;text-decoration:none}
+a:hover{color:#245240}
+button{font-family:inherit;cursor:pointer}
+input,select{font-family:inherit}
+::placeholder{color:#a8a094}
+input:focus,select:focus{outline:2px solid #2f6b4f33;outline-offset:1px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes barGrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+</style>
+</helmet>
+
+<sc-if value="{{ notLoggedIn }}" hint-placeholder-val="{{ true }}">
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:radial-gradient(120% 80% at 50% 0%, #f5f1e8 0%, #e7e0d2 100%)">
+  <div style="width:100%;max-width:420px;animation:fadeUp .6s ease both">
+    <div style="text-align:center;margin-bottom:36px">
+      <div style="font-family:'Instrument Serif',serif;font-size:15px;letter-spacing:.42em;color:#2f6b4f;text-transform:uppercase;margin-bottom:6px">Personal Ledger</div>
+      <div style="font-family:'Instrument Serif',serif;font-size:64px;line-height:.95;letter-spacing:.02em">ATLAS</div>
+      <div style="color:#6b6459;font-size:14px;margin-top:10px;max-width:300px;margin-left:auto;margin-right:auto;line-height:1.5">Adaptive Tracking &amp; Ledger Analysis. Track what you spend, plan what comes next.</div>
+    </div>
+    <div style="background:#fbfaf5;border:1px solid rgba(28,26,23,.1);border-radius:4px;padding:28px 26px;box-shadow:0 20px 50px -30px rgba(28,26,23,.5)">
+      <label style="display:block;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#6b6459;margin-bottom:6px">Email</label>
+      <input value="{{ email }}" onInput="{{ onEmail }}" style="width:100%;padding:11px 12px;border:1px solid rgba(28,26,23,.18);border-radius:3px;background:#fff;font-size:15px;margin-bottom:16px">
+      <label style="display:block;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#6b6459;margin-bottom:6px">Password</label>
+      <input type="password" value="{{ password }}" onInput="{{ onPassword }}" placeholder="••••••••" style="width:100%;padding:11px 12px;border:1px solid rgba(28,26,23,.18);border-radius:3px;background:#fff;font-size:15px;margin-bottom:22px">
+      <button onClick="{{ login }}" style="width:100%;padding:12px;background:#1c1a17;color:#f5f1e8;border:none;border-radius:3px;font-size:15px;font-weight:600;letter-spacing:.02em;transition:background .15s" style-hover="background:#2f6b4f;width:100%;padding:12px;color:#f5f1e8;border:none;border-radius:3px;font-size:15px;font-weight:600;letter-spacing:.02em">Sign in</button>
+      <div style="text-align:center;margin-top:16px;font-size:13px;color:#8a8175">Single-user account · v1 · <span style="color:#a8a094">demo — click sign in</span></div>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ loggedIn }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;min-height:100vh;background:#efeae0">
+
+  <!-- SIDEBAR -->
+  <aside style="width:236px;flex:none;background:#1c1a17;color:#e9e3d6;display:flex;flex-direction:column;padding:26px 0;position:sticky;top:0;height:100vh">
+    <div style="padding:0 26px 26px">
+      <div style="font-family:'Instrument Serif',serif;font-size:32px;line-height:1;letter-spacing:.03em;color:#f5f1e8">ATLAS</div>
+      <div style="font-size:10.5px;letter-spacing:.34em;text-transform:uppercase;color:#7d8a4f;margin-top:5px">Personal Ledger</div>
+    </div>
+    <nav style="display:flex;flex-direction:column;gap:2px;padding:8px 14px;flex:1">
+      <sc-for list="{{ navItems }}" as="item" hint-placeholder-count="4">
+        <button onClick="{{ item.go }}" style="display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:11px 12px;border:none;border-radius:4px;font-size:14.5px;font-weight:500;letter-spacing:.01em;color:{{ item.color }};background:{{ item.bg }};transition:all .15s">
+          <span style="font-family:'Spline Sans Mono',monospace;font-size:11px;opacity:.6;width:16px">{{ item.num }}</span>
+          <span>{{ item.label }}</span>
+        </button>
+      </sc-for>
+    </nav>
+    <div style="padding:16px 26px 0;border-top:1px solid rgba(245,241,232,.1);margin:0 14px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:34px;height:34px;border-radius:50%;background:#2f6b4f;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px;color:#f5f1e8">{{ initial }}</div>
+        <div style="min-width:0">
+          <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ email }}</div>
+          <button onClick="{{ logout }}" style="background:none;border:none;padding:0;color:#8a8175;font-size:12px">Sign out</button>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main style="flex:1;min-width:0;display:flex;flex-direction:column">
+
+    <!-- TOP BAR -->
+    <header style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 34px;border-bottom:1px solid rgba(28,26,23,.1);background:#f5f1e8;position:sticky;top:0;z-index:5;flex-wrap:wrap">
+      <div>
+        <div style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#8a8175;margin-bottom:2px">{{ viewLabel }}</div>
+        <h1 style="margin:0;font-family:'Instrument Serif',serif;font-size:30px;font-weight:400;line-height:1">{{ viewTitle }}</h1>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px">
+        <div style="display:flex;align-items:center;border:1px solid rgba(28,26,23,.16);border-radius:4px;background:#fff;overflow:hidden">
+          <button onClick="{{ prevMonth }}" style="border:none;background:none;padding:9px 12px;font-size:16px;color:#6b6459;line-height:1">‹</button>
+          <div style="padding:0 4px;min-width:128px;text-align:center;font-weight:600;font-size:14.5px">{{ monthLabel }}</div>
+          <button onClick="{{ nextMonth }}" style="border:none;background:none;padding:9px 12px;font-size:16px;color:#6b6459;line-height:1">›</button>
+        </div>
+        <button onClick="{{ openAdd }}" style="display:flex;align-items:center;gap:7px;padding:10px 16px;background:#2f6b4f;color:#f5f1e8;border:none;border-radius:4px;font-size:14px;font-weight:600;box-shadow:0 6px 16px -8px rgba(47,107,79,.9)">
+          <span style="font-size:17px;line-height:1;margin-top:-1px">+</span> Add transaction
+        </button>
+      </div>
+    </header>
+
+    <div style="padding:30px 34px 60px;flex:1;overflow:auto">
+
+      <!-- ================= DASHBOARD ================= -->
+      <sc-if value="{{ isDash }}" hint-placeholder-val="{{ true }}">
+      <div data-screen-label="Dashboard" style="animation:fadeUp .4s ease both;max-width:1080px">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:18px;margin-bottom:30px">
+          <div style="background:#fbfaf5;border:1px solid rgba(28,26,23,.1);border-radius:6px;padding:22px 24px">
+            <div style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#8a8175">Income</div>
+            <div style="font-family:'Spline Sans Mono',monospace;font-size:32px;font-weight:600;color:#2f6b4f;margin-top:8px">{{ sumIncome }}</div>
+          </div>
+          <div style="background:#fbfaf5;border:1px solid rgba(28,26,23,.1);border-radius:6px;padding:22px 24px">
+            <div style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#8a8175">Expenses</div>
+            <div style="font-family:'Spline Sans Mono',monospace;font-size:32px;font-weight:600;color:#b0512f;margin-top:8px">{{ sumExpense }}</div>
+          </div>
+          <div style="background:#1c1a17;border:1px solid #1c1a17;border-radius:6px;padding:22px 24px">
+            <div style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#a89f8d">Net this month</div>
+            <div style="font-family:'Spline Sans Mono',monospace;font-size:32px;font-weight:600;color:{{ netColor }};margin-top:8px">{{ sumNet }}</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:24px">
+          <section style="background:#fbfaf5;border:1px solid rgba(28,26,23,.1);border-radius:6px;padding:24px 26px">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:18px">
+              <h2 style="margin:0;font-family:'Instrument Serif',serif;font-size:22px;font-weight:400">Budget progress</h2>
+              <button onClick="{{ goBudgets }}" style="background:none;border:none;color:#2f6b4f;font-size:13px;font-weight:600">Manage →</button>
+            </div>
+            <sc-if value="{{ hasBudgets }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;flex-direction:column;gap:16px">
+                <sc-for list="{{ budgetRows }}" as="row" hint-placeholder-count="5">
+                  <div>
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+                      <div style="display:flex;align-items:center;gap:9px">
+                        <span style="width:9px;height:9px;border-radius:50%;background:{{ row.color }}"></span>
+                        <span style="font-size:14px;font-weight:500">{{ row.name }}</span>
+                        <sc-if value="{{ row.over }}" hint-placeholder-val="{{ false }}"><span style="font-size:10.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#b0512f;background:#b0512f18;padding:2px 6px;border-radius:3px">Over</span></sc-if>
+                      </div>
+                      <div style="font-family:'Spline Sans Mono',monospace;font-size:13px;color:#6b6459">{{ row.actualFmt }} <span style="color:#b3aa9b">/ {{ row.plannedFmt }}</span></div>
+                    </div>
+                    <div style="height:7px;border-radius:4px;background:#e7e0d2;overflow:hidden">
+                      <div style="height:100%;border-radius:4px;background:{{ row.barColor }};width:{{ row.pct }}%;transform-origin:left;animation:barGrow .5s ease both"></div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ noBudgets }}" hint-placeholder-val="{{ false }}">
+              <div style="text-align:center;padding:26px 10px;color:#8a8175">
+                <div style="font-size:14px;margin-bottom:12px">No budget set for {{ monthLabel }}.</div>
+                <button onClick="{{ goBudgets }}" style="padding:9px 16px;background:#1c1a17;color:#f5f1e8;border:none;border-radius:4px;font-size:13px;font-weight:600">Plan this month</button>
+              </div>
+            </sc-if>
+          </section>
+
+          <section style="background:#fbfaf5;border:1px solid rgba(28,26,23,.1);border-radius:6px;padding:24px 26px">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:18px">
+              <h2 style="margin:0;font-family:'Instrument Serif',serif;font-size:22px;font-weight:400">Recent activity</h2>
+              <button onClick="{{ goTxns }}" style="background:none;border:none;color:#2f6b4f;font-size:13px;font-weight:600">All →</button>
+            </div>
+            <sc-if value="{{ hasTxns }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;flex-direction:column">
+                <sc-for list="{{ recentTxns }}" as="t" hint-placeholder-count="6">
+                  <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(28,26,23,.07)">
+                    <span style="width:8px;height:8px;border-radius:50%;background:{{ t.color }};flex:none"></span>
+                    <div style="flex:1;min-width:0">
+                      <div style="font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.title }}</div>
+                      <div style="font-size:12px;color:#8a8175">{{ t.catName }} · {{ t.dateFmt }}</div>
+                    </div>
+                    <div style="font-family:'Spline Sans Mono',monospace;font-size:14px;font-weight:500;color:{{ t.amtColor }}">{{ t.amtFmt }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ noTxns }}" hint-placeholder-val="{{ false }}">
+              <div style="text-align:center;padding:26px 10px;color:#8a8175;font-size:14px">No transactions in {{ monthLabel }} yet.</div>
+            </sc-if>
+          </section>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ================= TRANSACTIONS ================= -->
+      <sc-if value="{{ isTxns }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Transactions" style="animation:fadeUp .4s ease both;max-width:920px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;flex-wrap:wrap">
+          <sc-for list="{{ filterChips }}" as="chip" hint-placeholder-count="3">
+            <button onClick="{{ chip.go }}" style="padding:7px 15px;border:1px solid {{ chip.border }};background:{{ chip.bg }};color:{{ chip.color }};border-radius:20px;font-size:13px;font-weight:600">{{ chip.label }}</button>
+          </sc-for>
+          <div style="margin-left:auto;font-size:13px;color:#8a8175">{{ txnCount }} in {{ monthLabel }}</div>
+        </div>
+
+        <div style="background:#fbfaf5;border:1px solid rgba(28,26,23,.1);border-radius:6px;overflow:hidden">
+          <div style="display:grid;grid-template-columns:88px 1fr 150px 120px 56px;gap:12px;padding:12px 22px;border-bottom:1px solid rgba(28,26,23,.1);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#8a8175;font-weight:600">
+            <div>Date</div><div>Description</div><div>Category</div><div style="text-align:right">Amount</div><div></div>
+          </div>
+          <sc-if value="{{ hasFilteredTxns }}" hint-placeholder-val="{{ true }}">
+            <sc-for list="{{ filteredTxns }}" as="t" hint-placeholder-count="8">
+              <div style="display:grid;grid-template-columns:88px 1fr 150px 120px 56px;gap:12px;align-items:center;padding:13px 22px;border-bottom:1px solid rgba(28,26,23,.06)">
+                <div style="font-family:'Spline Sans Mono',monospace;font-size:13px;color:#6b6459">{{ t.dateFmt }}</div>
+                <div style="min-width:0">
+                  <span style="font-size:14px;font-weight:500">{{ t.title }}</span>
+                  <sc-if value="{{ t.recurring }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#6a5a8c;border:1px solid #6a5a8c44;padding:1px 5px;border-radius:3px;margin-left:8px">↻ Recurring</span></sc-if>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;min-width:0">
+                  <span style="width:8px;height:8px;border-radius:50%;background:{{ t.color }};flex:none"></span>
+                  <span style="font-size:13px;color:#4a453d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.catName }}</span>
+                </div>
+                <div style="font-family:'Spline Sans Mono',monospace;font-size:14px;font-weight:500;text-align:right;color:{{ t.amtColor }}">{{ t.amtFmt }}</div>
+                <div style="display:flex;gap:4px;justify-content:flex-end">
+                  <button onClick="{{ t.edit }}" title="Edit" style="border:none;background:none;padding:5px;color:#8a8175;font-size:14px;line-height:1;border-radius:3px" style-hover="border:none;background:#e7e0d2;padding:5px;color:#1c1a17;font-size:14px;line-height:1;border-radius:3px">✎</button>
+                  <button onClick="{{ t.del }}" title="Delete" style="border:none;background:none;padding:5px;color:#8a8175;font-size:14px;line-height:1;border-radius:3px" style-hover="border:none;background:#b0512f18;padding:5px;color:#b0512f;font-size:14px;line-height:1;border-radius:3px">✕</button>
+                </div>
+              </div>
+            </sc-for>
+          </sc-if>
+          <sc-if value="{{ noFilteredTxns }}" hint-placeholder-val="{{ false }}">
+            <div style="text-align:center;padding:44px 10px;color:#8a8175">
+              <div style="font-size:15px;margin-bottom:14px">Nothing here yet.</div>
+              <button onClick="{{ openAdd }}" style="padding:9px 16px;background:#2f6b4f;color:#f5f1e8;border:none;border-radius:4px;font-size:13px;font-weight:600">+ Add transaction</button>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ================= BUDGETS ================= -->
+      <sc-if value="{{ isBudgets }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Budgets" style="animation:fadeUp .4s ease both;max-width:920px">
+        <div style="display:flex;gap:16px;margin-bottom:22px;flex-wrap:wrap">
+          <div style="flex:1;min-width:180px;background:#fbfaf5;border:1px solid rgba(28,26,23,.1);border-radius:6px;padding:18px 22px">
+            <div style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#8a8175">Planned</div>
+            <div style="font-family:'Spline Sans Mono',monospace;font-size:26px;font-weight:600;margin-top:6px">{{ totalPlanned }}</div>
+          </div>
+          <div style="flex:1;min-width:180px;background:#fbfaf5;border:1px solid rgba(28,26,23,.1);border-radius:6px;padding:18px 22px">
+            <div style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#8a8175">Spent so far</div>
+            <div style="font-family:'Spline Sans Mono',monospace;font-size:26px;font-weight:600;color:#b0512f;margin-top:6px">{{ totalSpent }}</div>
+          </div>
+          <div style="flex:1;min-width:180px;background:#fbfaf5;border:1px solid rgba(28,26,23,.1);border-radius:6px;padding:18px 22px">
+            <div style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#8a8175">Remaining</div>
+            <div style="font-family:'Spline Sans Mono',monospace;font-size:26px;font-weight:600;color:{{ remainColor }};margin-top:6px">{{ totalRemaining }}</div>
+          </div>
+        </div>
+
+        <div style="background:#fbfaf5;border:1px solid rgba(28,26,23,.1);border-radius:6px;padding:24px 26px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap">
+            <h2 style="margin:0;font-family:'Instrument Serif',serif;font-size:22px;font-weight:400">Plan for {{ monthLabel }}</h2>
+            <button onClick="{{ prefillFromLast }}" style="display:flex;align-items:center;gap:7px;padding:8px 14px;background:#fff;border:1px solid #2f6b4f;color:#2f6b4f;border-radius:4px;font-size:13px;font-weight:600">↺ Pre-fill from {{ prevMonthShort }} actuals</button>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <sc-for list="{{ budgetRows }}" as="row" hint-placeholder-count="6">
+              <div style="display:grid;grid-template-columns:1fr 130px;gap:18px;align-items:center;padding:14px 0;border-bottom:1px solid rgba(28,26,23,.07)">
+                <div style="min-width:0">
+                  <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+                    <span style="width:10px;height:10px;border-radius:50%;background:{{ row.color }}"></span>
+                    <span style="font-size:15px;font-weight:500">{{ row.name }}</span>
+                    <span style="font-family:'Spline Sans Mono',monospace;font-size:12px;color:#8a8175;margin-left:auto">{{ row.actualFmt }} spent · {{ row.remainFmt }}</span>
+                  </div>
+                  <div style="height:8px;border-radius:4px;background:#e7e0d2;overflow:hidden">
+                    <div style="height:100%;border-radius:4px;background:{{ row.barColor }};width:{{ row.pct }}%;transform-origin:left;animation:barGrow .5s ease both"></div>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:center;border:1px solid rgba(28,26,23,.18);border-radius:4px;background:#fff;padding:0 10px">
+                  <span style="color:#8a8175;font-family:'Spline Sans Mono',monospace;font-size:14px">₹</span>
+                  <input type="number" value="{{ row.planned }}" onInput="{{ row.onPlan }}" style="width:100%;border:none;background:none;padding:9px 6px;font-family:'Spline Sans Mono',monospace;font-size:14px;text-align:right;outline:none">
+                </div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="margin-top:22px;padding-top:18px;border-top:1px solid rgba(28,26,23,.1);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+            <div style="font-size:13px;color:#6b6459;max-width:420px;line-height:1.5">Set a target per category. Next month's plan can be pre-filled from this month's actuals — the “adaptive” part.</div>
+            <button onClick="{{ planNextMonth }}" style="padding:10px 18px;background:#1c1a17;color:#f5f1e8;border:none;border-radius:4px;font-size:14px;font-weight:600">Plan {{ nextMonthShort }} →</button>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ================= HISTORY ================= -->
+      <sc-if value="{{ isHistory }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="History" style="animation:fadeUp .4s ease both;max-width:920px">
+        <section style="background:#fbfaf5;border:1px solid rgba(28,26,23,.1);border-radius:6px;padding:24px 26px;margin-bottom:24px">
+          <h2 style="margin:0 0 4px;font-family:'Instrument Serif',serif;font-size:22px;font-weight:400">Spending trend</h2>
+          <div style="font-size:13px;color:#8a8175;margin-bottom:26px">Total expenses over recent months</div>
+          <div style="display:flex;align-items:flex-end;gap:26px;height:200px;padding:0 6px">
+            <sc-for list="{{ trend }}" as="m" hint-placeholder-count="4">
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:10px;height:100%;justify-content:flex-end">
+                <div style="font-family:'Spline Sans Mono',monospace;font-size:12.5px;font-weight:600;color:#4a453d">{{ m.totalFmt }}</div>
+                <div style="width:100%;max-width:72px;background:{{ m.color }};border-radius:5px 5px 0 0;height:{{ m.h }}%;transform-origin:bottom;animation:barGrow .5s ease both;min-height:4px"></div>
+                <div style="font-size:12.5px;color:#6b6459;font-weight:{{ m.weight }}">{{ m.label }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+
+        <section style="background:#fbfaf5;border:1px solid rgba(28,26,23,.1);border-radius:6px;padding:24px 26px">
+          <h2 style="margin:0 0 4px;font-family:'Instrument Serif',serif;font-size:22px;font-weight:400">{{ prevMonthShort }} vs {{ monthShort }} by category</h2>
+          <div style="font-size:13px;color:#8a8175;margin-bottom:22px">How each category shifted month over month</div>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <sc-for list="{{ compareRows }}" as="c" hint-placeholder-count="6">
+              <div style="display:grid;grid-template-columns:150px 1fr 96px;gap:16px;align-items:center;padding:11px 0;border-bottom:1px solid rgba(28,26,23,.06)">
+                <div style="display:flex;align-items:center;gap:9px;min-width:0">
+                  <span style="width:9px;height:9px;border-radius:50%;background:{{ c.color }};flex:none"></span>
+                  <span style="font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.name }}</span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:5px">
+                  <div style="display:flex;align-items:center;gap:8px"><span style="font-size:10px;color:#a8a094;width:26px;font-family:'Spline Sans Mono',monospace">{{ prevMonthShort }}</span><div style="flex:1;height:6px;background:#e7e0d2;border-radius:3px;overflow:hidden"><div style="height:100%;background:#c3bba9;border-radius:3px;width:{{ c.prevPct }}%"></div></div></div>
+                  <div style="display:flex;align-items:center;gap:8px"><span style="font-size:10px;color:#a8a094;width:26px;font-family:'Spline Sans Mono',monospace">{{ monthShort }}</span><div style="flex:1;height:6px;background:#e7e0d2;border-radius:3px;overflow:hidden"><div style="height:100%;background:{{ c.color }};border-radius:3px;width:{{ c.curPct }}%"></div></div></div>
+                </div>
+                <div style="text-align:right">
+                  <div style="font-family:'Spline Sans Mono',monospace;font-size:13.5px;font-weight:600">{{ c.curFmt }}</div>
+                  <div style="font-size:11.5px;font-weight:600;color:{{ c.deltaColor }}">{{ c.delta }}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+      </div>
+      </sc-if>
+
+    </div>
+  </main>
+
+  <!-- ================= ADD/EDIT MODAL ================= -->
+  <sc-if value="{{ modalOpen }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ closeModal }}" style="position:fixed;inset:0;background:rgba(28,26,23,.42);backdrop-filter:blur(2px);display:flex;align-items:center;justify-content:center;padding:24px;z-index:50;animation:fadeIn .2s ease both">
+    <div onClick="{{ stop }}" style="width:100%;max-width:440px;background:#f5f1e8;border-radius:8px;box-shadow:0 30px 70px -20px rgba(28,26,23,.6);overflow:hidden;animation:fadeUp .28s ease both">
+      <div style="padding:22px 26px 0">
+        <div style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#8a8175">{{ modalTag }}</div>
+        <h2 style="margin:4px 0 0;font-family:'Instrument Serif',serif;font-size:26px;font-weight:400">{{ modalTitle }}</h2>
+      </div>
+      <div style="padding:22px 26px 26px">
+        <div style="display:flex;gap:8px;margin-bottom:20px;background:#e7e0d2;padding:4px;border-radius:5px">
+          <button onClick="{{ setExpense }}" style="flex:1;padding:9px;border:none;border-radius:4px;font-size:14px;font-weight:600;background:{{ expTabBg }};color:{{ expTabColor }};box-shadow:{{ expTabShadow }}">Expense</button>
+          <button onClick="{{ setIncome }}" style="flex:1;padding:9px;border:none;border-radius:4px;font-size:14px;font-weight:600;background:{{ incTabBg }};color:{{ incTabColor }};box-shadow:{{ incTabShadow }}">Income</button>
+        </div>
+
+        <label style="display:block;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#6b6459;margin-bottom:6px">Amount</label>
+        <div style="display:flex;align-items:center;border:1px solid rgba(28,26,23,.18);border-radius:4px;background:#fff;padding:0 12px;margin-bottom:16px">
+          <span style="font-family:'Spline Sans Mono',monospace;font-size:18px;color:#6b6459">₹</span>
+          <input type="number" value="{{ formAmount }}" onInput="{{ onAmount }}" placeholder="0" style="width:100%;border:none;background:none;padding:12px 8px;font-family:'Spline Sans Mono',monospace;font-size:18px;outline:none">
+        </div>
+
+        <div style="display:flex;gap:14px;margin-bottom:16px">
+          <div style="flex:1">
+            <label style="display:block;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#6b6459;margin-bottom:6px">Category</label>
+            <select value="{{ formCategory }}" onChange="{{ onCategory }}" style="width:100%;padding:11px 10px;border:1px solid rgba(28,26,23,.18);border-radius:4px;background:#fff;font-size:14px">
+              <sc-for list="{{ formCategories }}" as="c" hint-placeholder-count="5">
+                <option value="{{ c.id }}">{{ c.name }}</option>
+              </sc-for>
+            </select>
+          </div>
+          <div style="flex:1">
+            <label style="display:block;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#6b6459;margin-bottom:6px">Date</label>
+            <input type="date" value="{{ formDate }}" onInput="{{ onDate }}" style="width:100%;padding:11px 10px;border:1px solid rgba(28,26,23,.18);border-radius:4px;background:#fff;font-size:14px">
+          </div>
+        </div>
+
+        <label style="display:block;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#6b6459;margin-bottom:6px">Note <span style="text-transform:none;letter-spacing:0;font-weight:400;color:#a8a094">(optional)</span></label>
+        <input value="{{ formDesc }}" onInput="{{ onDesc }}" placeholder="e.g. Weekly groceries" style="width:100%;padding:11px 12px;border:1px solid rgba(28,26,23,.18);border-radius:4px;background:#fff;font-size:14px;margin-bottom:22px">
+
+        <div style="display:flex;gap:10px;align-items:center">
+          <sc-if value="{{ isEditing }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ deleteCurrent }}" style="padding:11px 14px;background:none;border:1px solid #b0512f55;color:#b0512f;border-radius:4px;font-size:14px;font-weight:600">Delete</button>
+          </sc-if>
+          <div style="flex:1"></div>
+          <button onClick="{{ closeModal }}" style="padding:11px 18px;background:none;border:1px solid rgba(28,26,23,.2);color:#4a453d;border-radius:4px;font-size:14px;font-weight:600">Cancel</button>
+          <button onClick="{{ saveTxn }}" style="padding:11px 22px;background:#2f6b4f;color:#f5f1e8;border:none;border-radius:4px;font-size:14px;font-weight:600">{{ saveLabel }}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+</div>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    loggedIn: false,
+    email: 'you@atlas.app',
+    password: '',
+    view: 'dashboard',
+    monthIdx: 3, // index into this.months (July 2026)
+    filter: 'all',
+    modalOpen: false,
+    editingId: null,
+    form: { amount: '', type: 'expense', categoryId: 4, date: '2026-07-15', description: '' },
+    nextId: 1000,
+    categories: [
+      { id: 1, name: 'Salary', type: 'income', color: '#2f6b4f' },
+      { id: 2, name: 'Freelance', type: 'income', color: '#3f7d63' },
+      { id: 3, name: 'Rent', type: 'expense', color: '#a8563a' },
+      { id: 4, name: 'Groceries', type: 'expense', color: '#7d8a4f' },
+      { id: 5, name: 'Transport', type: 'expense', color: '#4a7a8c' },
+      { id: 6, name: 'Utilities', type: 'expense', color: '#8a7043' },
+      { id: 7, name: 'Dining', type: 'expense', color: '#a4506b' },
+      { id: 8, name: 'Entertainment', type: 'expense', color: '#6a5a8c' },
+    ],
+    transactions: [
+      // July 2026
+      { id: 1, date: '2026-07-01', amount: 120000, type: 'income', categoryId: 1, description: 'Monthly salary', recurring: true },
+      { id: 2, date: '2026-07-15', amount: 18000, type: 'income', categoryId: 2, description: 'Design contract', recurring: false },
+      { id: 3, date: '2026-07-05', amount: 35000, type: 'expense', categoryId: 3, description: 'Apartment rent', recurring: true },
+      { id: 4, date: '2026-07-03', amount: 3200, type: 'expense', categoryId: 4, description: 'Big Bazaar run', recurring: false },
+      { id: 5, date: '2026-07-10', amount: 2800, type: 'expense', categoryId: 4, description: 'Vegetables & fruit', recurring: false },
+      { id: 6, date: '2026-07-17', amount: 4100, type: 'expense', categoryId: 4, description: 'Monthly stock-up', recurring: false },
+      { id: 7, date: '2026-07-24', amount: 2600, type: 'expense', categoryId: 4, description: 'Groceries', recurring: false },
+      { id: 8, date: '2026-07-02', amount: 1500, type: 'expense', categoryId: 5, description: 'Metro card recharge', recurring: false },
+      { id: 9, date: '2026-07-14', amount: 900, type: 'expense', categoryId: 5, description: 'Auto rides', recurring: false },
+      { id: 10, date: '2026-07-20', amount: 3000, type: 'expense', categoryId: 5, description: 'Fuel', recurring: false },
+      { id: 11, date: '2026-07-08', amount: 2200, type: 'expense', categoryId: 6, description: 'Electricity bill', recurring: true },
+      { id: 12, date: '2026-07-08', amount: 800, type: 'expense', categoryId: 6, description: 'Broadband', recurring: true },
+      { id: 13, date: '2026-07-06', amount: 1800, type: 'expense', categoryId: 7, description: 'Dinner with friends', recurring: false },
+      { id: 14, date: '2026-07-13', amount: 2400, type: 'expense', categoryId: 7, description: 'Weekend brunch', recurring: false },
+      { id: 15, date: '2026-07-21', amount: 1200, type: 'expense', categoryId: 7, description: 'Takeout', recurring: false },
+      { id: 16, date: '2026-07-11', amount: 650, type: 'expense', categoryId: 8, description: 'Movie night', recurring: false },
+      { id: 17, date: '2026-07-19', amount: 1500, type: 'expense', categoryId: 8, description: 'Concert tickets', recurring: false },
+      // June 2026
+      { id: 31, date: '2026-06-01', amount: 120000, type: 'income', categoryId: 1, description: 'Monthly salary', recurring: true },
+      { id: 32, date: '2026-06-05', amount: 35000, type: 'expense', categoryId: 3, description: 'Apartment rent', recurring: true },
+      { id: 33, date: '2026-06-07', amount: 4300, type: 'expense', categoryId: 4, description: 'Groceries', recurring: false },
+      { id: 34, date: '2026-06-16', amount: 3900, type: 'expense', categoryId: 4, description: 'Groceries', recurring: false },
+      { id: 35, date: '2026-06-25', amount: 3500, type: 'expense', categoryId: 4, description: 'Groceries', recurring: false },
+      { id: 36, date: '2026-06-04', amount: 2100, type: 'expense', categoryId: 5, description: 'Metro & autos', recurring: false },
+      { id: 37, date: '2026-06-18', amount: 3200, type: 'expense', categoryId: 5, description: 'Fuel', recurring: false },
+      { id: 38, date: '2026-06-08', amount: 2450, type: 'expense', categoryId: 6, description: 'Electricity bill', recurring: true },
+      { id: 39, date: '2026-06-08', amount: 800, type: 'expense', categoryId: 6, description: 'Broadband', recurring: true },
+      { id: 40, date: '2026-06-12', amount: 3100, type: 'expense', categoryId: 7, description: 'Dining out', recurring: false },
+      { id: 41, date: '2026-06-22', amount: 2600, type: 'expense', categoryId: 7, description: 'Dining out', recurring: false },
+      { id: 42, date: '2026-06-15', amount: 2900, type: 'expense', categoryId: 8, description: 'Theme park', recurring: false },
+      // May 2026
+      { id: 60, date: '2026-05-01', amount: 120000, type: 'income', categoryId: 1, description: 'Monthly salary', recurring: true },
+      { id: 61, date: '2026-05-05', amount: 35000, type: 'expense', categoryId: 3, description: 'Apartment rent', recurring: true },
+      { id: 62, date: '2026-05-14', amount: 11200, type: 'expense', categoryId: 4, description: 'Groceries (month)', recurring: false },
+      { id: 63, date: '2026-05-18', amount: 4800, type: 'expense', categoryId: 5, description: 'Transport (month)', recurring: false },
+      { id: 64, date: '2026-05-08', amount: 3050, type: 'expense', categoryId: 6, description: 'Utilities', recurring: false },
+      { id: 65, date: '2026-05-20', amount: 4300, type: 'expense', categoryId: 7, description: 'Dining (month)', recurring: false },
+      { id: 66, date: '2026-05-11', amount: 1600, type: 'expense', categoryId: 8, description: 'Entertainment', recurring: false },
+    ],
+    budgets: {
+      '2026-07': { 3: 35000, 4: 13000, 5: 6000, 6: 3500, 7: 5000, 8: 2500 },
+      '2026-06': { 3: 35000, 4: 12000, 5: 5500, 6: 3200, 7: 5500, 8: 3000 },
+    },
+  };
+
+  months = ['2026-04', '2026-05', '2026-06', '2026-07', '2026-08'];
+  monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  // ---------- helpers ----------
+  grp(n) {
+    n = Math.round(Math.abs(n));
+    let s = String(n), last3 = s.slice(-3), rest = s.slice(0, -3);
+    if (rest) { last3 = ',' + last3; rest = rest.replace(/\B(?=(\d{2})+(?!\d))/g, ','); }
+    return rest + last3;
+  }
+  fmt(n) { return '₹' + this.grp(n); }
+  monthKey(idx) { return this.months[idx]; }
+  labelFor(key) { const [y, m] = key.split('-'); return this.monthNames[+m - 1] + ' ' + y; }
+  shortFor(key) { const [, m] = key.split('-'); return this.monthNames[+m - 1]; }
+  catById(id) { return this.state.categories.find(c => c.id === +id); }
+  txForMonth(key) { return this.state.transactions.filter(t => t.date.slice(0, 7) === key); }
+  expenseByCat(key, catId) {
+    return this.txForMonth(key).filter(t => t.type === 'expense' && t.categoryId === catId)
+      .reduce((s, t) => s + t.amount, 0);
+  }
+  fmtDate(d) { const [, m, day] = d.split('-'); return day + ' ' + this.monthNames[+m - 1]; }
+
+  // ---------- actions ----------
+  onEmail = e => this.setState({ email: e.target.value });
+  onPassword = e => this.setState({ password: e.target.value });
+  login = () => this.setState({ loggedIn: true });
+  logout = () => this.setState({ loggedIn: false, password: '' });
+  nav = v => () => this.setState({ view: v });
+  prevMonth = () => this.setState(s => ({ monthIdx: Math.max(0, s.monthIdx - 1) }));
+  nextMonth = () => this.setState(s => ({ monthIdx: Math.min(this.months.length - 1, s.monthIdx + 1) }));
+  setFilter = f => () => this.setState({ filter: f });
+  stop = e => e.stopPropagation();
+
+  openAdd = () => {
+    const key = this.monthKey(this.state.monthIdx);
+    this.setState({ modalOpen: true, editingId: null,
+      form: { amount: '', type: 'expense', categoryId: 4, date: key + '-15', description: '' } });
+  };
+  openEdit = id => () => {
+    const t = this.state.transactions.find(x => x.id === id);
+    if (!t) return;
+    this.setState({ modalOpen: true, editingId: id,
+      form: { amount: String(t.amount), type: t.type, categoryId: t.categoryId, date: t.date, description: t.description } });
+  };
+  closeModal = () => this.setState({ modalOpen: false, editingId: null });
+  setType = ty => () => this.setState(s => {
+    const cat = s.categories.find(c => c.type === ty);
+    return { form: { ...s.form, type: ty, categoryId: cat ? cat.id : s.form.categoryId } };
+  });
+  onField = f => e => this.setState(s => ({ form: { ...s.form, [f]: e.target.value } }));
+
+  saveTxn = () => {
+    const f = this.state.form;
+    const amt = parseFloat(f.amount);
+    if (!amt || amt <= 0) return;
+    this.setState(s => {
+      const rec = { amount: amt, type: f.type, categoryId: +f.categoryId, date: f.date, description: f.description || this.catById(f.categoryId).name };
+      let txns;
+      if (s.editingId) {
+        txns = s.transactions.map(t => t.id === s.editingId ? { ...t, ...rec } : t);
+      } else {
+        txns = [...s.transactions, { id: s.nextId, recurring: false, ...rec }];
+      }
+      return { transactions: txns, nextId: s.nextId + 1, modalOpen: false, editingId: null };
+    });
+  };
+  deleteTxn = id => () => this.setState(s => ({ transactions: s.transactions.filter(t => t.id !== id) }));
+  deleteCurrent = () => this.setState(s => ({ transactions: s.transactions.filter(t => t.id !== s.editingId), modalOpen: false, editingId: null }));
+
+  setBudget = catId => e => {
+    const v = parseFloat(e.target.value) || 0;
+    const key = this.monthKey(this.state.monthIdx);
+    this.setState(s => ({ budgets: { ...s.budgets, [key]: { ...(s.budgets[key] || {}), [catId]: v } } }));
+  };
+  prefillFromLast = () => {
+    const key = this.monthKey(this.state.monthIdx);
+    const prevKey = this.monthKey(Math.max(0, this.state.monthIdx - 1));
+    this.setState(s => {
+      const b = {};
+      s.categories.filter(c => c.type === 'expense').forEach(c => { b[c.id] = this.expenseByCat(prevKey, c.id); });
+      return { budgets: { ...s.budgets, [key]: b } };
+    });
+  };
+  planNextMonth = () => {
+    const idx = this.state.monthIdx;
+    const key = this.monthKey(idx);
+    const nextIdx = Math.min(this.months.length - 1, idx + 1);
+    const nextKey = this.monthKey(nextIdx);
+    this.setState(s => {
+      let budgets = s.budgets;
+      if (!s.budgets[nextKey]) {
+        const b = {};
+        s.categories.filter(c => c.type === 'expense').forEach(c => { b[c.id] = this.expenseByCat(key, c.id); });
+        budgets = { ...s.budgets, [nextKey]: b };
+      }
+      return { budgets, monthIdx: nextIdx };
+    });
+  };
+
+  // ---------- derived ----------
+  renderVals() {
+    const s = this.state;
+    const key = this.monthKey(s.monthIdx);
+    const prevKey = this.monthKey(Math.max(0, s.monthIdx - 1));
+    const monthLabel = this.labelFor(key);
+    const monthTx = this.txForMonth(key);
+    const income = monthTx.filter(t => t.type === 'income').reduce((a, t) => a + t.amount, 0);
+    const expense = monthTx.filter(t => t.type === 'expense').reduce((a, t) => a + t.amount, 0);
+    const net = income - expense;
+
+    const expCats = s.categories.filter(c => c.type === 'expense');
+    const mb = s.budgets[key] || {};
+    const budgetRows = expCats.map(c => {
+      const planned = mb[c.id] || 0;
+      const actual = this.expenseByCat(key, c.id);
+      const pct = planned > 0 ? Math.min(100, (actual / planned) * 100) : (actual > 0 ? 100 : 0);
+      const over = planned > 0 && actual > planned;
+      const remaining = planned - actual;
+      return {
+        id: c.id, name: c.name, color: c.color,
+        planned, actualFmt: this.fmt(actual), plannedFmt: this.fmt(planned),
+        pct: Math.round(pct), over,
+        barColor: over ? '#b0512f' : c.color,
+        remainFmt: remaining >= 0 ? this.fmt(remaining) + ' left' : this.fmt(-remaining) + ' over',
+        onPlan: this.setBudget(c.id),
+      };
+    });
+    const hasBudgets = Object.keys(mb).length > 0;
+    const totalPlanned = expCats.reduce((a, c) => a + (mb[c.id] || 0), 0);
+    const totalRemaining = totalPlanned - expense;
+
+    // transactions view
+    const sorted = [...monthTx].sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id);
+    const decorate = t => {
+      const c = this.catById(t.categoryId);
+      return {
+        id: t.id, title: t.description, catName: c.name, color: c.color,
+        dateFmt: this.fmtDate(t.date), recurring: !!t.recurring,
+        amtFmt: (t.type === 'income' ? '+' : '−') + this.fmt(t.amount),
+        amtColor: t.type === 'income' ? '#2f6b4f' : '#1c1a17',
+        edit: this.openEdit(t.id), del: this.deleteTxn(t.id),
+      };
+    };
+    const filtered = sorted.filter(t => s.filter === 'all' || t.type === s.filter);
+    const filteredTxns = filtered.map(decorate);
+
+    // history trend (last up to 4 months incl current)
+    const trendKeys = this.months.slice(Math.max(0, s.monthIdx - 3), s.monthIdx + 1);
+    const trendData = trendKeys.map(k => ({ k, total: this.txForMonth(k).filter(t => t.type === 'expense').reduce((a, t) => a + t.amount, 0) }));
+    const maxTrend = Math.max(1, ...trendData.map(d => d.total));
+    const trend = trendData.map(d => ({
+      label: this.shortFor(d.k), totalFmt: this.fmt(d.total),
+      h: Math.round((d.total / maxTrend) * 100),
+      color: d.k === key ? '#2f6b4f' : '#c3bba9',
+      weight: d.k === key ? 700 : 500,
+    }));
+
+    // compare prev vs current per category
+    const maxCat = Math.max(1, ...expCats.map(c => Math.max(this.expenseByCat(key, c.id), this.expenseByCat(prevKey, c.id))));
+    const compareRows = expCats.map(c => {
+      const cur = this.expenseByCat(key, c.id);
+      const prev = this.expenseByCat(prevKey, c.id);
+      const delta = cur - prev;
+      return {
+        name: c.name, color: c.color,
+        curFmt: this.fmt(cur),
+        curPct: Math.round((cur / maxCat) * 100), prevPct: Math.round((prev / maxCat) * 100),
+        delta: prev === 0 ? 'new' : (delta === 0 ? 'no change' : (delta > 0 ? '▲ ' : '▼ ') + this.fmt(delta)),
+        deltaColor: delta > 0 ? '#b0512f' : (delta < 0 ? '#2f6b4f' : '#8a8175'),
+      };
+    });
+
+    // nav
+    const navDef = [['dashboard', 'Dashboard', '01'], ['transactions', 'Transactions', '02'], ['budgets', 'Budgets', '03'], ['history', 'History', '04']];
+    const navItems = navDef.map(([k, label, num]) => ({
+      label, num, go: this.nav(k),
+      color: s.view === k ? '#f5f1e8' : '#a89f8d',
+      bg: s.view === k ? 'rgba(47,107,79,.9)' : 'transparent',
+    }));
+
+    // filter chips
+    const chipDef = [['all', 'All'], ['income', 'Income'], ['expense', 'Expenses']];
+    const filterChips = chipDef.map(([k, label]) => ({
+      label, go: this.setFilter(k),
+      bg: s.filter === k ? '#1c1a17' : '#fbfaf5',
+      color: s.filter === k ? '#f5f1e8' : '#4a453d',
+      border: s.filter === k ? '#1c1a17' : 'rgba(28,26,23,.18)',
+    }));
+
+    // modal
+    const formCategories = s.categories.filter(c => c.type === s.form.type);
+    const viewTitles = { dashboard: 'Overview', transactions: 'Transactions', budgets: 'Budget planning', history: 'History & trends' };
+    const viewTags = { dashboard: monthLabel, transactions: 'Ledger', budgets: 'Adaptive', history: 'Reports' };
+
+    return {
+      notLoggedIn: !s.loggedIn, loggedIn: s.loggedIn,
+      email: s.email, password: s.password, initial: (s.email[0] || 'A').toUpperCase(),
+      onEmail: this.onEmail, onPassword: this.onPassword, login: this.login, logout: this.logout,
+      navItems,
+      viewLabel: viewTags[s.view], viewTitle: viewTitles[s.view],
+      monthLabel, monthShort: this.shortFor(key), prevMonthShort: this.shortFor(prevKey),
+      nextMonthShort: this.shortFor(this.monthKey(Math.min(this.months.length - 1, s.monthIdx + 1))),
+      prevMonth: this.prevMonth, nextMonth: this.nextMonth, openAdd: this.openAdd,
+      goBudgets: this.nav('budgets'), goTxns: this.nav('transactions'),
+
+      isDash: s.view === 'dashboard', isTxns: s.view === 'transactions',
+      isBudgets: s.view === 'budgets', isHistory: s.view === 'history',
+
+      sumIncome: this.fmt(income), sumExpense: this.fmt(expense),
+      sumNet: (net < 0 ? '−' : '') + this.fmt(net), netColor: net < 0 ? '#e6a17a' : '#7d8a4f',
+      budgetRows, hasBudgets, noBudgets: !hasBudgets,
+      recentTxns: sorted.slice(0, 6).map(decorate),
+      hasTxns: sorted.length > 0, noTxns: sorted.length === 0,
+
+      filterChips, txnCount: filtered.length + (filtered.length === 1 ? ' entry' : ' entries'),
+      filteredTxns, hasFilteredTxns: filteredTxns.length > 0, noFilteredTxns: filteredTxns.length === 0,
+
+      totalPlanned: this.fmt(totalPlanned), totalSpent: this.fmt(expense),
+      totalRemaining: (totalRemaining < 0 ? '−' : '') + this.fmt(totalRemaining),
+      remainColor: totalRemaining < 0 ? '#b0512f' : '#2f6b4f',
+      prefillFromLast: this.prefillFromLast, planNextMonth: this.planNextMonth,
+
+      trend, compareRows,
+
+      modalOpen: s.modalOpen, isEditing: !!s.editingId,
+      modalTag: s.editingId ? 'Edit entry' : 'New entry',
+      modalTitle: s.editingId ? 'Edit transaction' : 'Add transaction',
+      saveLabel: s.editingId ? 'Save changes' : 'Add',
+      closeModal: this.closeModal, stop: this.stop, saveTxn: this.saveTxn, deleteCurrent: this.deleteCurrent,
+      setExpense: this.setType('expense'), setIncome: this.setType('income'),
+      expTabBg: s.form.type === 'expense' ? '#fff' : 'transparent',
+      expTabColor: s.form.type === 'expense' ? '#1c1a17' : '#8a8175',
+      expTabShadow: s.form.type === 'expense' ? '0 1px 3px rgba(28,26,23,.2)' : 'none',
+      incTabBg: s.form.type === 'income' ? '#fff' : 'transparent',
+      incTabColor: s.form.type === 'income' ? '#2f6b4f' : '#8a8175',
+      incTabShadow: s.form.type === 'income' ? '0 1px 3px rgba(28,26,23,.2)' : 'none',
+      formAmount: s.form.amount, formCategory: s.form.categoryId, formDate: s.form.date, formDesc: s.form.description,
+      formCategories,
+      onAmount: this.onField('amount'), onCategory: this.onField('categoryId'), onDate: this.onField('date'), onDesc: this.onField('description'),
+    };
+  }
+}
+</script>
+</body>
+</html>

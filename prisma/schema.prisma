@@ -1,0 +1,182 @@
+// ATLAS — Prisma schema
+// DB: libSQL / Turso (SQLite-compatible). NOTE: Prisma's SQLite connector does NOT
+// support enums, so kind/status/frequency/direction are String fields validated in
+// the app layer (see lib/constants.ts + lib/validations.ts). Money is stored as
+// integer paise. See DESIGN.md for the model rationale.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id           String @id @default(cuid())
+  email        String @unique
+  passwordHash String
+
+  // Seeds the carry-forward chain: cash on hand when ATLAS adoption began.
+  openingBalance      Int  @default(0) // paise
+  openingBalanceYear  Int?
+  openingBalanceMonth Int? // 1-12
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  categoryGroups        CategoryGroup[]
+  categories            Category[]
+  transactions          Transaction[]
+  recurringTransactions RecurringTransaction[]
+  budgets               Budget[]
+  people                Person[]
+  personLedgerEntries   PersonLedgerEntry[]
+  funds                 Fund[]
+}
+
+// 2-level structure: Group (carries kind) -> Category -> line items (transactions).
+model CategoryGroup {
+  id        String @id @default(cuid())
+  userId    String
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  kind      String // INCOME | KNOWN_EXPENSE | SAVINGS | DISCRETIONARY
+  sortOrder Int    @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  categories Category[]
+
+  @@unique([userId, name])
+  @@index([userId, kind])
+}
+
+model Category {
+  id        String        @id @default(cuid())
+  userId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  groupId   String
+  group     CategoryGroup @relation(fields: [groupId], references: [id])
+  name      String
+  isDefault Boolean       @default(false)
+  sortOrder Int           @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  transactions          Transaction[]
+  recurringTransactions RecurringTransaction[]
+
+  @@unique([userId, name])
+  @@index([userId, groupId])
+}
+
+model Transaction {
+  id                String                @id @default(cuid())
+  userId            String
+  user              User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date              DateTime
+  amount            Int // paise
+  categoryId        String
+  category          Category              @relation(fields: [categoryId], references: [id])
+  description       String?
+  status            String                @default("PAID") // PENDING | PAID | SKIPPED
+  recurringSourceId String?
+  recurringSource   RecurringTransaction? @relation(fields: [recurringSourceId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([recurringSourceId, date])
+  @@index([userId, date])
+  @@index([userId, categoryId])
+  @@index([userId, status])
+}
+
+model RecurringTransaction {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount      Int // paise
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id])
+  description String?
+  frequency   String   @default("MONTHLY") // MONTHLY (v1)
+  isActive    Boolean  @default(true)
+
+  lastGeneratedYear  Int?
+  lastGeneratedMonth Int? // 1-12; both null until first generation
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  generatedTransactions Transaction[]
+
+  @@index([userId, isActive])
+}
+
+// Per-month plan row: the discretionary cap plus the editable Money-in figures
+// (income + additional). One row per user per month.
+model Budget {
+  id         String @id @default(cuid())
+  userId     String
+  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  year       Int
+  month      Int // 1-12
+  cap        Int    @default(0) // paise — overall discretionary spending cap
+  income     Int    @default(0) // paise — primary income for the month
+  additional Int    @default(0) // paise — additional/one-off income
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, year, month])
+}
+
+model Person {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name   String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  entries PersonLedgerEntry[]
+
+  @@unique([userId, name])
+}
+
+model PersonLedgerEntry {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  personId    String
+  person      Person   @relation(fields: [personId], references: [id], onDelete: Cascade)
+  date        DateTime
+  amount      Int // paise
+  direction   String // GIVEN | RECEIVED
+  description String?
+  pending     Boolean  @default(false) // pending settle-up; excluded from cash math until settled
+  linkedTxnId String? // optional: this entry is also a cash movement
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, personId])
+}
+
+model Fund {
+  id        String @id @default(cuid())
+  userId    String
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  balance   Int    @default(0) // paise; user-edited snapshot value
+  sortOrder Int    @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, name])
+}

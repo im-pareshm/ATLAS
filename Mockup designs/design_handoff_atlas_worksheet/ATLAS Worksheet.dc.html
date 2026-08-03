@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:#050505;background:#eef2f0;-webkit-font-smoothing:antialiased}
+a{color:#4f7c6b;text-decoration:none}a:hover{color:#3f5f52}
+button{font-family:inherit;cursor:pointer}
+input,select{font-family:inherit}
+::placeholder{color:#a7b0ac}
+input:focus{outline:none}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes barGrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+</style>
+</helmet>
+
+<sc-if value="{{ notLoggedIn }}" hint-placeholder-val="{{ true }}">
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:radial-gradient(130% 90% at 50% -10%, #e4efe9 0%, #eef2f0 55%)">
+  <div style="width:100%;max-width:400px;animation:fadeUp .5s ease both;text-align:center">
+    <div style="display:inline-flex;align-items:center;gap:9px;margin-bottom:22px">
+      <div style="width:34px;height:34px;border-radius:10px;background:#4f7c6b;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px -8px #4f7c6baa">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M21 7v6h-6"/></svg>
+      </div>
+      <span style="font-size:22px;font-weight:800;letter-spacing:-.02em">ATLAS</span>
+    </div>
+    <h1 style="margin:0 0 8px;font-size:27px;font-weight:800;letter-spacing:-.02em">Your month, in one view</h1>
+    <div style="color:#4a504e;font-size:15px;line-height:1.5;margin-bottom:26px">Plan what's due, tick off what's paid, and always know the cash left.</div>
+    <div style="background:#fff;border-radius:18px;padding:26px 24px;box-shadow:0 2px 4px rgba(26,28,40,.04),0 24px 48px -28px rgba(26,28,40,.32);text-align:left">
+      <label style="display:block;font-size:12.5px;font-weight:600;color:#4a504e;margin-bottom:6px">Email</label>
+      <input value="{{ email }}" onInput="{{ onEmail }}" style="width:100%;padding:12px 13px;border:1px solid #dde5e1;border-radius:11px;background:#f6f9f7;font-size:15px;margin-bottom:15px">
+      <label style="display:block;font-size:12.5px;font-weight:600;color:#4a504e;margin-bottom:6px">Password</label>
+      <input type="password" value="{{ password }}" onInput="{{ onPassword }}" placeholder="••••••••" style="width:100%;padding:12px 13px;border:1px solid #dde5e1;border-radius:11px;background:#f6f9f7;font-size:15px;margin-bottom:20px">
+      <button onClick="{{ login }}" style="width:100%;padding:13px;background:#4f7c6b;color:#fff;border:none;border-radius:11px;font-size:15px;font-weight:700;box-shadow:0 8px 18px -8px #4f7c6bcc" style-hover="width:100%;padding:13px;background:#3f5f52;color:#fff;border:none;border-radius:11px;font-size:15px;font-weight:700">Sign in</button>
+      <div style="text-align:center;margin-top:14px;font-size:13px;color:#a7b0ac">Single user · demo — just click sign in</div>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ loggedIn }}" hint-placeholder-val="{{ true }}">
+<div style="min-height:100vh;background:#eef2f0">
+
+  <!-- TOP BAR -->
+  <header style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 30px;background:rgba(238,242,240,.85);backdrop-filter:blur(10px);position:sticky;top:0;z-index:20;flex-wrap:wrap;border-bottom:1px solid #e2e8e5">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:30px;height:30px;border-radius:9px;background:#4f7c6b;display:flex;align-items:center;justify-content:center">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M21 7v6h-6"/></svg>
+      </div>
+      <span style="font-size:19px;font-weight:800;letter-spacing:-.02em">ATLAS</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="display:flex;align-items:center;background:#fff;border:1px solid #e2e8e5;border-radius:11px;padding:3px;box-shadow:0 1px 2px rgba(26,28,40,.04)">
+        <button onClick="{{ prevMonth }}" style="border:none;background:none;padding:6px 11px;font-size:15px;color:#4a504e;line-height:1;border-radius:8px" style-hover="border:none;background:#eef2f0;padding:6px 11px;font-size:15px;color:#050505;line-height:1;border-radius:8px">‹</button>
+        <div class="num" style="padding:0 8px;min-width:124px;text-align:center;font-weight:700;font-size:14px">{{ monthLabel }}</div>
+        <button onClick="{{ nextMonth }}" style="border:none;background:none;padding:6px 11px;font-size:15px;color:#4a504e;line-height:1;border-radius:8px" style-hover="border:none;background:#eef2f0;padding:6px 11px;font-size:15px;color:#050505;line-height:1;border-radius:8px">›</button>
+      </div>
+      <div style="width:32px;height:32px;border-radius:50%;background:#e4efe9;color:#4f7c6b;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px">{{ initial }}</div>
+    </div>
+  </header>
+
+  <div style="max-width:1160px;margin:0 auto;padding:26px 30px 72px;animation:fadeUp .4s ease both">
+
+    <!-- ===== SUMMARY ===== -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px">
+      <!-- money in -->
+      <div style="background:#fff;border-radius:16px;padding:18px 20px;box-shadow:0 1px 3px rgba(26,28,40,.05)">
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:12px">
+          <div style="width:30px;height:30px;border-radius:9px;background:#e4efe9;color:#4f7c6b;display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg></div>
+          <span style="font-size:13px;font-weight:600;color:#4a504e">Money in</span>
+        </div>
+        <div class="num" style="font-size:28px;font-weight:800;color:#4f7c6b;letter-spacing:-.02em;margin-bottom:14px">{{ moneyIn }}</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+            <span style="font-size:12.5px;color:#6a706e">Income</span>
+            <div style="display:flex;align-items:center;border:1px solid #e2e8e5;border-radius:8px;background:#f6f9f7;padding:0 8px"><span style="color:#a7b0ac;font-size:12px">₹</span><input type="number" value="{{ income }}" onInput="{{ onIncome }}" class="num" style="width:80px;border:none;background:none;padding:6px 4px;font-size:12.5px;text-align:right;font-weight:600"></div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+            <span style="font-size:12.5px;color:#6a706e">Additional</span>
+            <div style="display:flex;align-items:center;border:1px solid #e2e8e5;border-radius:8px;background:#f6f9f7;padding:0 8px"><span style="color:#a7b0ac;font-size:12px">₹</span><input type="number" value="{{ additional }}" onInput="{{ onAdditional }}" class="num" style="width:80px;border:none;background:none;padding:6px 4px;font-size:12.5px;text-align:right;font-weight:600"></div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+            <span style="font-size:12.5px;color:#6a706e">Carry-in + received</span>
+            <span class="num" style="font-size:12.5px;color:#2e3230;font-weight:600">{{ inRest }}</span>
+          </div>
+        </div>
+      </div>
+      <!-- money out -->
+      <div style="background:#fff;border-radius:16px;padding:18px 20px;box-shadow:0 1px 3px rgba(26,28,40,.05)">
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:12px">
+          <div style="width:30px;height:30px;border-radius:9px;background:#f3e7e1;color:#b07a68;display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12l7 7 7-7"/></svg></div>
+          <span style="font-size:13px;font-weight:600;color:#4a504e">Money out · paid</span>
+        </div>
+        <div class="num" style="font-size:28px;font-weight:800;color:#b07a68;letter-spacing:-.02em;margin-bottom:14px">{{ moneyOut }}</div>
+        <div style="display:flex;flex-direction:column;gap:9px">
+          <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12.5px;color:#6a706e">Known expenses</span><span class="num" style="font-size:12.5px;color:#2e3230;font-weight:600">{{ knownPaidFmt }}</span></div>
+          <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12.5px;color:#6a706e">Discretionary</span><span class="num" style="font-size:12.5px;color:#2e3230;font-weight:600">{{ otherTotalFmt }}</span></div>
+          <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12.5px;color:#6a706e">Given to people</span><span class="num" style="font-size:12.5px;color:#2e3230;font-weight:600">{{ givenFmt }}</span></div>
+        </div>
+      </div>
+      <!-- remaining hero -->
+      <div style="border-radius:16px;padding:20px 22px;display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(150deg,#4f7c6b 0%,#6f9686 100%);color:#fff;box-shadow:0 12px 30px -14px #4f7c6baa">
+        <div style="display:flex;align-items:center;gap:9px">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="13" rx="2.5"/><path d="M16 12h.01"/><path d="M2 10h20"/></svg>
+          <span style="font-size:13px;font-weight:600;color:#e6e5fb">Remaining cash</span>
+        </div>
+        <div>
+          <div class="num" style="font-size:44px;font-weight:800;line-height:1.02;letter-spacing:-.03em;margin:12px 0 10px;color:{{ remainColor }}">{{ remaining }}</div>
+          <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.16);padding:4px 10px;border-radius:999px;font-size:12px;font-weight:600"><span class="num">{{ unpaidFmt }}</span> still to pay</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== KNOWN EXPENSES ===== -->
+    <section style="margin-top:32px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+        <h2 style="margin:0;font-size:19px;font-weight:800;letter-spacing:-.01em">Known expenses</h2>
+        <div style="font-size:13px;color:#6a706e"><span class="num" style="color:#050505;font-weight:700">{{ knownPaidFmt }}</span> paid of <span class="num">{{ knownPlannedFmt }}</span></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(326px,1fr));gap:16px">
+        <sc-for list="{{ buckets }}" as="b" hint-placeholder-count="4">
+          <div style="background:#fff;border-radius:16px;padding:18px 20px;box-shadow:0 1px 3px rgba(26,28,40,.05)">
+            <div style="display:flex;align-items:center;gap:11px;margin-bottom:12px">
+              <div style="width:34px;height:34px;border-radius:10px;background:{{ b.tint }};color:{{ b.color }};display:flex;align-items:center;justify-content:center;flex:none">{{ b.icon }}</div>
+              <div style="flex:1;min-width:0">
+                <h3 style="margin:0;font-size:15.5px;font-weight:700">{{ b.name }}</h3>
+                <div style="font-size:12px;color:#99a29e">{{ b.doneLabel }}</div>
+              </div>
+              <div class="num" style="font-size:13.5px;color:#050505;font-weight:700;text-align:right">{{ b.paidFmt }}<div style="color:#a7b0ac;font-weight:500;font-size:11.5px">of {{ b.plannedFmt }}</div></div>
+            </div>
+            <div style="height:6px;border-radius:99px;background:#e9efec;overflow:hidden;margin-bottom:14px"><div style="height:100%;border-radius:99px;background:{{ b.color }};width:{{ b.pct }}%;transform-origin:left;animation:barGrow .5s ease both"></div></div>
+            <div style="display:flex;flex-direction:column">
+              <sc-for list="{{ b.items }}" as="it" hint-placeholder-count="3">
+                <div style="display:flex;align-items:center;gap:11px;padding:8px 0;border-top:1px solid #eef2f0">
+                  <button onClick="{{ it.toggle }}" style="width:20px;height:20px;flex:none;border-radius:7px;border:1.5px solid {{ it.checkBorder }};background:{{ it.checkBg }};color:#fff;font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;transition:all .12s">{{ it.check }}</button>
+                  <div style="flex:1;min-width:0">
+                    <div style="font-size:13.5px;font-weight:500;{{ it.labelStyle }}">{{ it.label }}</div>
+                    <sc-if value="{{ it.hasNote }}" hint-placeholder-val="{{ false }}"><div class="num" style="font-size:11px;color:#a7b0ac;margin-top:2px">{{ it.note }}</div></sc-if>
+                  </div>
+                  <span class="num" style="font-size:13px;{{ it.amtStyle }}">{{ it.amtFmt }}</span>
+                  <button onClick="{{ it.cancel }}" title="Cancel / restore" style="border:none;background:none;padding:4px;color:#b9c0bc;font-size:12px;line-height:1;border-radius:6px" style-hover="border:none;background:#eef2f0;padding:4px;color:#4a504e;font-size:12px;line-height:1;border-radius:6px">{{ it.cancelIcon }}</button>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <!-- ===== TWO COLUMN ===== -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;margin-top:32px;align-items:start">
+
+      <!-- discretionary -->
+      <section style="background:#fff;border-radius:16px;padding:20px 22px;box-shadow:0 1px 3px rgba(26,28,40,.05)">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+          <h2 style="margin:0;font-size:17px;font-weight:800;letter-spacing:-.01em">Other spending</h2>
+          <div style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:#6a706e">Monthly cap <div style="display:flex;align-items:center;border:1px solid #e2e8e5;border-radius:8px;background:#f6f9f7;padding:0 7px"><span style="color:#a7b0ac;font-size:12px">₹</span><input type="number" value="{{ cap }}" onInput="{{ onCap }}" class="num" style="width:56px;border:none;background:none;padding:6px 3px;font-size:12.5px;text-align:right;font-weight:600"></div></div>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:9px;margin-bottom:8px">
+          <span class="num" style="font-size:24px;font-weight:800;color:{{ capColor }};letter-spacing:-.02em">{{ otherTotalFmt }}</span>
+          <span style="font-size:13px;color:#99a29e">/ <span class="num">{{ capFmt }}</span></span>
+          <span style="margin-left:auto;font-size:12px;font-weight:700;color:{{ capColor }};background:{{ capNoteBg }};padding:3px 9px;border-radius:999px">{{ capNote }}</span>
+        </div>
+        <div style="height:7px;border-radius:99px;background:#e9efec;overflow:hidden;margin-bottom:14px"><div style="height:100%;border-radius:99px;background:{{ capBarColor }};width:{{ capPct }}%;transform-origin:left;animation:barGrow .5s ease both"></div></div>
+        <div style="display:flex;flex-direction:column">
+          <sc-for list="{{ otherRows }}" as="o" hint-placeholder-count="6">
+            <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-top:1px solid #eef2f0">
+              <span class="num" style="font-size:11px;color:#b9c0bc;width:18px">{{ o.n }}</span>
+              <span style="flex:1;font-size:13.5px;font-weight:500;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ o.desc }}</span>
+              <span class="num" style="font-size:13px;font-weight:600">{{ o.amtFmt }}</span>
+              <button onClick="{{ o.del }}" title="Remove" style="border:none;background:none;padding:4px;color:#b9c0bc;font-size:13px;line-height:1;border-radius:6px" style-hover="border:none;background:#f3e7e1;padding:4px;color:#b07a68;font-size:13px;line-height:1;border-radius:6px">✕</button>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:15px">
+          <input value="{{ addDesc }}" onInput="{{ onAddDesc }}" placeholder="What did you spend on?" style="flex:1;padding:10px 12px;border:1px solid #dde5e1;border-radius:10px;background:#f6f9f7;font-size:13.5px">
+          <div style="display:flex;align-items:center;border:1px solid #dde5e1;border-radius:10px;background:#f6f9f7;padding:0 10px;width:106px"><span style="color:#a7b0ac;font-size:13px">₹</span><input type="number" value="{{ addAmount }}" onInput="{{ onAddAmount }}" placeholder="0" class="num" style="width:100%;border:none;background:none;padding:10px 4px;font-size:13.5px;text-align:right;font-weight:600"></div>
+          <button onClick="{{ addOther }}" style="padding:10px 17px;background:#4f7c6b;color:#fff;border:none;border-radius:10px;font-size:13.5px;font-weight:700" style-hover="padding:10px 17px;background:#3f5f52;color:#fff;border:none;border-radius:10px;font-size:13.5px;font-weight:700">Add</button>
+        </div>
+      </section>
+
+      <!-- side column -->
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <!-- people ledger -->
+        <section style="background:#fff;border-radius:16px;padding:20px 22px;box-shadow:0 1px 3px rgba(26,28,40,.05)">
+          <h2 style="margin:0 0 14px;font-size:17px;font-weight:800;letter-spacing:-.01em">People ledger</h2>
+          <sc-for list="{{ people }}" as="p" hint-placeholder-count="1">
+            <div style="margin-bottom:16px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px">
+                <span style="font-size:14.5px;font-weight:700">{{ p.name }}</span>
+                <span class="num" style="font-size:12px;color:{{ p.netColor }};font-weight:700;background:{{ p.netBg }};padding:3px 9px;border-radius:999px">{{ p.netLabel }}</span>
+              </div>
+              <sc-if value="{{ p.hasEntries }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex;flex-direction:column">
+                  <sc-for list="{{ p.entries }}" as="e" hint-placeholder-count="2">
+                    <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px solid #eef2f0">
+                      <span style="width:22px;height:22px;border-radius:7px;background:{{ e.tint }};color:{{ e.dirColor }};display:flex;align-items:center;justify-content:center;font-size:13px;flex:none">{{ e.arrow }}</span>
+                      <span style="flex:1;font-size:13px;min-width:0">{{ e.label }}</span>
+                      <sc-if value="{{ e.pending }}" hint-placeholder-val="{{ false }}"><button onClick="{{ e.receive }}" style="font-size:11px;font-weight:700;color:#4f7c6b;background:#e9ebea;border:none;padding:4px 9px;border-radius:999px">Mark received</button></sc-if>
+                      <span class="num" style="font-size:12.5px;color:{{ e.dirColor }};font-weight:700">{{ e.amtFmt }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <sc-if value="{{ p.empty }}" hint-placeholder-val="{{ false }}"><div style="font-size:12.5px;color:#a7b0ac;padding:4px 0">No entries this month.</div></sc-if>
+            </div>
+          </sc-for>
+        </section>
+
+        <!-- sinking funds -->
+        <section style="background:#fff;border-radius:16px;padding:20px 22px;box-shadow:0 1px 3px rgba(26,28,40,.05)">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px">
+            <h2 style="margin:0;font-size:17px;font-weight:800;letter-spacing:-.01em">Savings &amp; funds</h2>
+            <span class="num" style="font-size:12.5px;color:#4f7c6b;font-weight:700">{{ fundsTotalFmt }}</span>
+          </div>
+          <div style="display:flex;flex-direction:column">
+            <sc-for list="{{ funds }}" as="f" hint-placeholder-count="4">
+              <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid #eef2f0">
+                <span style="flex:1;font-size:13.5px;min-width:0">{{ f.name }}</span>
+                <div style="display:flex;align-items:center;border:1px solid #e2e8e5;border-radius:8px;background:#f6f9f7;padding:0 7px"><span style="color:#a7b0ac;font-size:12px">₹</span><input type="number" value="{{ f.amount }}" onInput="{{ f.onEdit }}" class="num" style="width:76px;border:none;background:none;padding:6px 4px;font-size:12.5px;text-align:right;font-weight:600"></div>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+      </div>
+    </div>
+
+  </div>
+</div>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    loggedIn: false,
+    email: 'you@atlas.app',
+    password: '',
+    monthIdx: 0,
+    income: 26947,
+    additional: 6212,
+    carryIn: 0,
+    cap: 4000,
+    addDesc: '',
+    addAmount: '',
+    buckets: [
+      { id: 'sav', name: 'Savings', color: '#4f7c6b', tint: '#e4efe9', target: 7000, items: [
+        { id: 's1', label: 'SIP', amount: 1500, paid: true, cancelled: false },
+        { id: 's2', label: 'Savings', amount: 4000, paid: false, cancelled: true, note: '−1,573 · −150 · −112' },
+        { id: 's3', label: 'Internet recharge', amount: 500, paid: false, cancelled: true, note: '−500' },
+        { id: 's4', label: 'Home rent', amount: 1000, paid: false, cancelled: true, note: '−500 · −470' },
+      ]},
+      { id: 'emi', name: 'EMI & loans', color: '#b07a68', tint: '#f3e7e1', target: 14234, items: [
+        { id: 'e1', label: '2L loan EMI', amount: 3900, paid: true },
+        { id: 'e2', label: '86K loan EMI', amount: 1100, paid: true },
+        { id: 'e3', label: '86K loan EMI', amount: 1100, paid: true },
+        { id: 'e4', label: '2.5L + 90K loan', amount: 5634, paid: true },
+        { id: 'e5', label: 'Home loan top-up', amount: 2500, paid: false, cancelled: true },
+      ]},
+      { id: 'sub', name: 'Subscriptions', color: '#82968c', tint: '#e8ecea', target: 1227, items: [
+        { id: 'u1', label: 'YouTube Premium', amount: 299, paid: true },
+        { id: 'u2', label: 'Google Drive', amount: 650, paid: true },
+        { id: 'u3', label: 'Crunchyroll', amount: 79, paid: true },
+        { id: 'u4', label: 'Netflix', amount: 199, paid: true },
+      ]},
+      { id: 'misc', name: 'Miscellaneous', color: '#6a706e', tint: '#e9ebea', target: 0, items: [
+        { id: 'm1', label: 'ICICI credit card bill', amount: 4603, paid: true },
+      ]},
+    ],
+    other: [
+      { id: 'o1', desc: 'Chinese', amount: 190 },
+      { id: 'o2', desc: 'Bike wash', amount: 100 },
+      { id: 'o3', desc: 'Chicken 65', amount: 50 },
+      { id: 'o4', desc: 'LIC premium', amount: 2698 },
+      { id: 'o5', desc: 'Train ticket', amount: 480 },
+      { id: 'o6', desc: 'Tyre air', amount: 10 },
+      { id: 'o7', desc: 'Snacks', amount: 140 },
+      { id: 'o8', desc: 'Vada pav', amount: 72 },
+      { id: 'o9', desc: 'Chinese', amount: 300 },
+    ],
+    people: [
+      { id: 'mummy', name: 'Mummy', entries: [
+        { id: 'p1', label: 'Ration', amount: 4340, dir: 'given' },
+        { id: 'p2', label: 'LIC', amount: 2000, dir: 'given' },
+        { id: 'p3', label: 'Received', amount: 3000, dir: 'received' },
+        { id: 'p4', label: 'Received (Nov)', amount: 1500, dir: 'received' },
+        { id: 'p5', label: 'Pending settle-up', amount: 1500, dir: 'received', pending: true },
+      ]},
+      { id: 'papa', name: 'Papa', entries: [] },
+    ],
+    funds: [
+      { id: 'f1', name: 'Bike fund', amount: 0 },
+      { id: 'f2', name: 'Mutual funds / stocks (invested)', amount: 26598 },
+      { id: 'f3', name: 'Home rent reserve', amount: 0 },
+      { id: 'f4', name: 'Internet recharge reserve', amount: 0 },
+      { id: 'f5', name: 'Personal savings', amount: 0 },
+      { id: 'f6', name: 'Papa', amount: 0 },
+    ],
+    nextId: 100,
+  };
+
+  months = ['January 2026', 'February 2026'];
+  icons = {
+    sav: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
+    emi: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2.5"/><path d="M2 10h20"/></svg>',
+    sub: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg>',
+    misc: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg>',
+  };
+
+  grp(n) { n = Math.round(Math.abs(n)); let s = String(n), l = s.slice(-3), r = s.slice(0, -3); if (r) { l = ',' + l; r = r.replace(/\B(?=(\d{2})+(?!\d))/g, ','); } return r + l; }
+  fmt(n) { return '₹' + this.grp(n); }
+  sign(n) { return (n < 0 ? '−' : '') + this.fmt(n); }
+  raw(html) { return React.createElement('span', { style: { display: 'flex' }, dangerouslySetInnerHTML: { __html: html } }); }
+
+  onEmail = e => this.setState({ email: e.target.value });
+  onPassword = e => this.setState({ password: e.target.value });
+  login = () => this.setState({ loggedIn: true });
+  prevMonth = () => this.setState(s => ({ monthIdx: Math.max(0, s.monthIdx - 1) }));
+  nextMonth = () => this.setState(s => ({ monthIdx: Math.min(this.months.length - 1, s.monthIdx + 1) }));
+  onNum = f => e => this.setState({ [f]: parseFloat(e.target.value) || 0 });
+  onAddDesc = e => this.setState({ addDesc: e.target.value });
+  onAddAmount = e => this.setState({ addAmount: e.target.value });
+
+  toggleItem = (bid, iid) => () => this.setState(s => ({
+    buckets: s.buckets.map(b => b.id !== bid ? b : { ...b, items: b.items.map(it => it.id === iid && !it.cancelled ? { ...it, paid: !it.paid } : it) })
+  }));
+  cancelItem = (bid, iid) => () => this.setState(s => ({
+    buckets: s.buckets.map(b => b.id !== bid ? b : { ...b, items: b.items.map(it => it.id === iid ? { ...it, cancelled: !it.cancelled, paid: it.cancelled ? it.paid : false } : it) })
+  }));
+  addOther = () => {
+    const amt = parseFloat(this.state.addAmount);
+    if (!this.state.addDesc.trim() || !amt || amt <= 0) return;
+    this.setState(s => ({ other: [...s.other, { id: 'o' + s.nextId, desc: s.addDesc.trim(), amount: amt }], nextId: s.nextId + 1, addDesc: '', addAmount: '' }));
+  };
+  delOther = id => () => this.setState(s => ({ other: s.other.filter(o => o.id !== id) }));
+  receive = (pid, eid) => () => this.setState(s => ({
+    people: s.people.map(p => p.id !== pid ? p : { ...p, entries: p.entries.map(e => e.id === eid ? { ...e, pending: false } : e) })
+  }));
+  editFund = id => e => { const v = parseFloat(e.target.value) || 0; this.setState(s => ({ funds: s.funds.map(f => f.id === id ? { ...f, amount: v } : f) })); };
+
+  renderVals() {
+    const s = this.state;
+
+    const buckets = s.buckets.map(b => {
+      const active = b.items.filter(i => !i.cancelled);
+      const planned = active.reduce((a, i) => a + i.amount, 0);
+      const paid = active.filter(i => i.paid).reduce((a, i) => a + i.amount, 0);
+      const doneCount = active.filter(i => i.paid).length;
+      const pct = planned > 0 ? Math.round((paid / planned) * 100) : 0;
+      const items = b.items.map(it => {
+        const dim = it.cancelled;
+        return {
+          label: it.label, note: it.note || '', hasNote: !!it.note,
+          amtFmt: this.fmt(it.amount),
+          check: it.paid && !it.cancelled ? '✓' : '',
+          checkBg: it.paid && !it.cancelled ? b.color : '#fff',
+          checkBorder: it.paid && !it.cancelled ? b.color : '#c3ccc7',
+          labelStyle: dim ? 'text-decoration:line-through;color:#b6b9c4' : (it.paid ? 'color:#050505' : 'color:#2e3230'),
+          amtStyle: dim ? 'text-decoration:line-through;color:#b9c0bc' : 'color:#050505;font-weight:600',
+          cancelIcon: dim ? '↺' : '✕',
+          toggle: this.toggleItem(b.id, it.id), cancel: this.cancelItem(b.id, it.id),
+        };
+      });
+      return { name: b.name, color: b.color, tint: b.tint, icon: this.raw(this.icons[b.id] || ''),
+        pct, paidFmt: this.fmt(paid), plannedFmt: this.fmt(planned),
+        doneLabel: doneCount + ' of ' + active.length + ' paid', items };
+    });
+
+    const knownPlanned = s.buckets.reduce((a, b) => a + b.items.filter(i => !i.cancelled).reduce((x, i) => x + i.amount, 0), 0);
+    const knownPaid = s.buckets.reduce((a, b) => a + b.items.filter(i => !i.cancelled && i.paid).reduce((x, i) => x + i.amount, 0), 0);
+    const unpaid = knownPlanned - knownPaid;
+
+    const otherTotal = s.other.reduce((a, o) => a + o.amount, 0);
+    const otherRows = s.other.map((o, i) => ({ n: String(i + 1).padStart(2, '0'), desc: o.desc, amtFmt: this.fmt(o.amount), del: this.delOther(o.id) }));
+    const overCap = otherTotal > s.cap;
+    const capPct = s.cap > 0 ? Math.min(100, Math.round((otherTotal / s.cap) * 100)) : 0;
+
+    let given = 0, received = 0;
+    const people = s.people.map(p => {
+      const entries = p.entries.map(e => {
+        const isGiven = e.dir === 'given';
+        return { label: e.label, amtFmt: this.fmt(e.amount), pending: !!e.pending,
+          arrow: isGiven ? '↑' : '↓', dirColor: isGiven ? '#b07a68' : '#4f7c6b',
+          tint: isGiven ? '#f3e7e1' : '#e4efe9',
+          receive: this.receive(p.id, e.id) };
+      });
+      p.entries.forEach(e => { if (e.pending) return; if (e.dir === 'given') given += e.amount; else received += e.amount; });
+      let pg = 0, pr = 0; p.entries.forEach(e => { if (e.pending) return; if (e.dir === 'given') pg += e.amount; else pr += e.amount; });
+      const pnet = pr - pg;
+      return { name: p.name, entries, hasEntries: entries.length > 0, empty: entries.length === 0,
+        netColor: pnet >= 0 ? '#4f7c6b' : '#b07a68',
+        netBg: pnet >= 0 ? '#e4efe9' : '#f3e7e1',
+        netLabel: p.entries.length === 0 ? 'no entries' : (pnet === 0 ? 'settled' : (pnet > 0 ? 'owes you ' : 'you owe ') + this.fmt(pnet)) };
+    });
+
+    const moneyInVal = s.income + s.additional + s.carryIn + received;
+    const moneyOutVal = knownPaid + otherTotal + given;
+    const remaining = moneyInVal - moneyOutVal;
+    const fundsTotal = s.funds.reduce((a, f) => a + f.amount, 0);
+
+    return {
+      notLoggedIn: !s.loggedIn, loggedIn: s.loggedIn,
+      email: s.email, password: s.password, initial: (s.email[0] || 'A').toUpperCase(),
+      onEmail: this.onEmail, onPassword: this.onPassword, login: this.login,
+      monthLabel: this.months[s.monthIdx], prevMonth: this.prevMonth, nextMonth: this.nextMonth,
+
+      income: s.income, additional: s.additional, cap: s.cap,
+      onIncome: this.onNum('income'), onAdditional: this.onNum('additional'), onCap: this.onNum('cap'),
+      inRest: this.fmt(s.carryIn + received),
+
+      moneyIn: this.fmt(moneyInVal), moneyOut: this.fmt(moneyOutVal),
+      remaining: this.sign(remaining), remainColor: remaining < 0 ? '#e6b9ab' : '#c9eddc',
+      knownPaidFmt: this.fmt(knownPaid), knownPlannedFmt: this.fmt(knownPlanned),
+      otherTotalFmt: this.fmt(otherTotal), givenFmt: this.fmt(given),
+      unpaidFmt: this.fmt(unpaid),
+
+      buckets,
+
+      otherRows, capFmt: this.fmt(s.cap),
+      capColor: overCap ? '#b07a68' : '#050505', capBarColor: overCap ? '#b07a68' : '#4f7c6b',
+      capPct, capNote: overCap ? this.fmt(otherTotal - s.cap) + ' over' : this.fmt(s.cap - otherTotal) + ' left',
+      capNoteBg: overCap ? '#f3e7e1' : '#e4efe9',
+      addDesc: s.addDesc, addAmount: s.addAmount,
+      onAddDesc: this.onAddDesc, onAddAmount: this.onAddAmount, addOther: this.addOther,
+
+      people,
+      funds: s.funds.map(f => ({ name: f.name, amount: f.amount, onEdit: this.editFund(f.id) })),
+      fundsTotalFmt: this.fmt(fundsTotal),
+    };
+  }
+}
+</script>
+</body>
+</html>
