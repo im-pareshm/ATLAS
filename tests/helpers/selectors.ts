@@ -1,0 +1,277 @@
+/**
+ * Centralized test selectors for all UI elements.
+ * Uses data-testid attributes for stable, maintainable selectors.
+ */
+
+export const Sel = {
+  // Login page
+  login: {
+    email: '[data-testid="login-email"]',
+    password: '[data-testid="login-password"]',
+    submit: '[data-testid="login-submit"]',
+    error: '[data-testid="login-error"]',
+    form: '[data-testid="login-form"]',
+  },
+
+  // Navigation
+  nav: {
+    container: '[data-testid="nav"]',
+    dashboard: '[data-testid="nav-dashboard"]',
+    known: '[data-testid="nav-known"]',
+    expenses: '[data-testid="nav-expenses"]',
+    people: '[data-testid="nav-people"]',
+    funds: '[data-testid="nav-funds"]',
+    history: '[data-testid="nav-history"]',
+    recurring: '[data-testid="nav-recurring"]',
+    categories: '[data-testid="nav-categories"]',
+    themeToggle: '[data-testid="nav-theme-toggle"]',
+    userMenu: '[data-testid="nav-user-menu"]',
+    logout: '[data-testid="nav-logout"]',
+    activeLink: '[data-testid^="nav-"][aria-current="page"]',
+  },
+
+  // Month Switcher (appears on multiple pages)
+  monthSwitcher: {
+    container: '[data-testid="month-switcher"]',
+    label: '[data-testid="month-switcher-label"]',
+    prev: '[data-testid="month-switcher-prev"]',
+    next: '[data-testid="month-switcher-next"]',
+    currentMonth: '[data-testid="month-switcher-current"]',
+  },
+
+  // Dashboard
+  dashboard: {
+    container: '[data-testid="dashboard"]',
+    summaryCards: '[data-testid="summary-card"]',
+    incomeCard: '[data-testid="summary-income"]',
+    knownExpensesCard: '[data-testid="summary-known-expenses"]',
+    discretionaryCard: '[data-testid="summary-discretionary"]',
+    remainingCashCard: '[data-testid="summary-remaining"]',
+    carryForwardCard: '[data-testid="summary-carry-forward"]',
+    quickActions: '[data-testid="quick-actions"]',
+    addKnownBtn: '[data-testid="quick-add-known"]',
+    addExpenseBtn: '[data-testid="quick-add-expense"]',
+    addPersonBtn: '[data-testid="quick-add-person"]',
+  },
+
+  // Known Expenses page
+  known: {
+    container: '[data-testid="known-expenses"]',
+    addForm: '[data-testid="known-add-form"]',
+    addDescription: '[data-testid="known-add-description"]',
+    addCategory: '[data-testid="known-add-category"]',
+    addAmount: '[data-testid="known-add-amount"]',
+    addSubmit: '[data-testid="known-add-submit"]',
+    addError: '[data-testid="known-add-error"]',
+    bucket: (name: string) => `[data-testid="known-bucket-${name.toLowerCase().replace(/\s+/g, '-')}"]`,
+    bucketHeading: '[data-testid="known-bucket-heading"]',
+    bucketTotal: '[data-testid="known-bucket-total"]',
+    bucketItems: '[data-testid="known-bucket-items"]',
+    item: (id: string) => `[data-testid="known-item-${id}"]`,
+    itemDescription: '[data-testid="item-description"]',
+    itemCategory: '[data-testid="item-category"]',
+    itemAmount: '[data-testid="item-amount"]',
+    itemStatus: '[data-testid="item-status"]',
+    itemStatusSelect: '[data-testid="item-status-select"]',
+    itemEdit: '[data-testid="item-edit"]',
+    itemDelete: '[data-testid="item-delete"]',
+    itemEditForm: '[data-testid="item-edit-form"]',
+    itemEditDescription: '[data-testid="item-edit-description"]',
+    itemEditAmount: '[data-testid="item-edit-amount"]',
+    itemEditSubmit: '[data-testid="item-edit-submit"]',
+    itemEditCancel: '[data-testid="item-edit-cancel"]',
+    status: {
+      pending: 'PENDING',
+      paid: 'PAID',
+      skipped: 'SKIPPED',
+    },
+  },
+
+  // Expenses page
+  expenses: {
+    container: '[data-testid="expenses"]',
+    addForm: '[data-testid="expenses-add-form"]',
+    addDescription: '[data-testid="expenses-add-description"]',
+    addCategory: '[data-testid="expenses-add-category"]',
+    addAmount: '[data-testid="expenses-add-amount"]',
+    addSubmit: '[data-testid="expenses-add-submit"]',
+    addError: '[data-testid="expenses-add-error"]',
+    list: '[data-testid="expenses-list"]',
+    transaction: (index: number) => `[data-testid="expenses-txn-${index}"]`,
+    txnDescription: '[data-testid="txn-description"]',
+    txnCategory: '[data-testid="txn-category"]',
+    txnAmount: '[data-testid="txn-amount"]',
+    txnDate: '[data-testid="txn-date"]',
+    txnEdit: '[data-testid="txn-edit"]',
+    txnDelete: '[data-testid="txn-delete"]',
+    filterCategory: '[data-testid="expenses-filter-category"]',
+    filterSearch: '[data-testid="expenses-filter-search"]',
+  },
+
+  // People page
+  people: {
+    container: '[data-testid="people"]',
+    addForm: '[data-testid="people-add-form"]',
+    addName: '[data-testid="people-add-name"]',
+    addSubmit: '[data-testid="people-add-submit"]',
+    addError: '[data-testid="people-add-error"]',
+    person: (id: string) => `[data-testid="person-${id}"]`,
+    personName: '[data-testid="person-name"]',
+    personBalance: '[data-testid="person-balance"]',
+    personReceived: '[data-testid="person-received"]',
+    personGiven: '[data-testid="person-given"]',
+    personEdit: '[data-testid="person-edit"]',
+    personDelete: '[data-testid="person-delete"]',
+    ledger: '[data-testid="person-ledger"]',
+    ledgerEntry: (index: number) => `[data-testid="ledger-entry-${index}"]`,
+    ledgerAddForm: '[data-testid="ledger-add-form"]',
+    ledgerAddDescription: '[data-testid="ledger-add-description"]',
+    ledgerAddAmount: '[data-testid="ledger-add-amount"]',
+    ledgerAddDirection: '[data-testid="ledger-add-direction"]',
+    ledgerAddSubmit: '[data-testid="ledger-add-submit"]',
+    direction: {
+      received: 'RECEIVED',
+      given: 'GIVEN',
+    },
+  },
+
+  // Funds page
+  funds: {
+    container: '[data-testid="funds"]',
+    addForm: '[data-testid="funds-add-form"]',
+    addName: '[data-testid="funds-add-name"]',
+    addBalance: '[data-testid="funds-add-balance"]',
+    addSubmit: '[data-testid="funds-add-submit"]',
+    addError: '[data-testid="funds-add-error"]',
+    fund: (id: string) => `[data-testid="fund-${id}"]`,
+    fundName: '[data-testid="fund-name"]',
+    fundBalance: '[data-testid="fund-balance"]',
+    fundEdit: '[data-testid="fund-edit"]',
+    fundDelete: '[data-testid="fund-delete"]',
+    fundEditForm: '[data-testid="fund-edit-form"]',
+    fundEditName: '[data-testid="fund-edit-name"]',
+    fundEditBalance: '[data-testid="fund-edit-balance"]',
+    fundEditSubmit: '[data-testid="fund-edit-submit"]',
+    fundEditCancel: '[data-testid="fund-edit-cancel"]',
+    total: '[data-testid="funds-total"]',
+  },
+
+  // History page
+  history: {
+    container: '[data-testid="history"]',
+    monthSelector: '[data-testid="history-month-selector"]',
+    monthOption: (year: number, month: number) => `[data-testid="history-month-${year}-${month}"]`,
+    summary: '[data-testid="history-summary"]',
+    income: '[data-testid="history-income"]',
+    knownExpenses: '[data-testid="history-known-expenses"]',
+    discretionary: '[data-testid="history-discretionary"]',
+    received: '[data-testid="history-received"]',
+    given: '[data-testid="history-given"]',
+    remaining: '[data-testid="history-remaining"]',
+    carryForward: '[data-testid="history-carry-forward"]',
+  },
+
+  // Recurring page
+  recurring: {
+    container: '[data-testid="recurring"]',
+    createForm: '[data-testid="recurring-create-form"]',
+    createDescription: '[data-testid="recurring-create-description"]',
+    createCategory: '[data-testid="recurring-create-category"]',
+    createAmount: '[data-testid="recurring-create-amount"]',
+    createSubmit: '[data-testid="recurring-create-submit"]',
+    createError: '[data-testid="recurring-create-error"]',
+    template: (id: string) => `[data-testid="recurring-template-${id}"]`,
+    templateDescription: '[data-testid="template-description"]',
+    templateCategory: '[data-testid="template-category"]',
+    templateAmount: '[data-testid="template-amount"]',
+    templateStatus: '[data-testid="template-status"]',
+    templateStatusBtn: '[data-testid="template-status-btn"]',
+    templateEdit: '[data-testid="template-edit"]',
+    templateDelete: '[data-testid="template-delete"]',
+    templateEditForm: '[data-testid="template-edit-form"]',
+    templateEditDescription: '[data-testid="template-edit-description"]',
+    templateEditAmount: '[data-testid="template-edit-amount"]',
+    templateEditSubmit: '[data-testid="template-edit-submit"]',
+    templateEditCancel: '[data-testid="template-edit-cancel"]',
+  },
+
+  // Categories page
+  categories: {
+    container: '[data-testid="categories"]',
+    addGroupForm: '[data-testid="categories-add-group-form"]',
+    addGroupName: '[data-testid="categories-add-group-name"]',
+    addGroupKind: '[data-testid="categories-add-group-kind"]',
+    addGroupSubmit: '[data-testid="categories-add-group-submit"]',
+    addGroupError: '[data-testid="categories-add-group-error"]',
+    group: (id: string) => `[data-testid="category-group-${id}"]`,
+    groupName: '[data-testid="group-name"]',
+    groupKind: '[data-testid="group-kind"]',
+    groupEdit: '[data-testid="group-edit"]',
+    groupDelete: '[data-testid="group-delete"]',
+    groupMoveUp: '[data-testid="group-move-up"]',
+    groupMoveDown: '[data-testid="group-move-down"]',
+    groupEditForm: '[data-testid="group-edit-form"]',
+    groupEditName: '[data-testid="group-edit-name"]',
+    groupEditKind: '[data-testid="group-edit-kind"]',
+    groupEditSubmit: '[data-testid="group-edit-submit"]',
+    groupEditCancel: '[data-testid="group-edit-cancel"]',
+    category: (groupId: string, catId: string) => `[data-testid="category-${groupId}-${catId}"]`,
+    categoryName: '[data-testid="category-name"]',
+    categoryAddForm: (groupId: string) => `[data-testid="add-category-form-${groupId}"]`,
+    addCategoryName: (groupId: string) => `[data-testid="add-category-name-${groupId}"]`,
+    addCategorySubmit: (groupId: string) => `[data-testid="add-category-submit-${groupId}"]`,
+    addCategoryError: (groupId: string) => `[data-testid="add-category-error-${groupId}"]`,
+    categoryEdit: '[data-testid="category-edit"]',
+    categoryDelete: '[data-testid="category-delete"]',
+    categoryMoveUp: '[data-testid="category-move-up"]',
+    categoryMoveDown: '[data-testid="category-move-down"]',
+    kind: {
+      income: 'INCOME',
+      knownExpense: 'KNOWN_EXPENSE',
+      savings: 'SAVINGS',
+      discretionary: 'DISCRETIONARY',
+    },
+  },
+
+  // Common form elements
+  form: {
+    input: 'input',
+    select: 'select',
+    textarea: 'textarea',
+    button: 'button',
+    submit: 'button[type="submit"]',
+    cancel: 'button[type="button"]',
+    error: '[data-testid*="error"]',
+  },
+
+  // Modals/Dialogs (if any)
+  modal: {
+    container: '[role="dialog"]',
+    title: '[role="dialog"] h2',
+    close: '[data-testid="modal-close"]',
+    confirm: '[data-testid="modal-confirm"]',
+    cancel: '[data-testid="modal-cancel"]',
+  },
+
+  // Toast/Notifications
+  toast: {
+    container: '[data-testid="toast-container"]',
+    message: '[data-testid="toast-message"]',
+    success: '[data-testid="toast-success"]',
+    error: '[data-testid="toast-error"]',
+  },
+} as const;
+
+/**
+ * Helper to create a selector for a dynamic item
+ */
+export function itemSelector(base: string, id: string): string {
+  return `[data-testid="${base}-${id}"]`;
+}
+
+/**
+ * Helper to get all items matching a pattern
+ */
+export function allItemsSelector(base: string): string {
+  return `[data-testid^="${base}-"]`;
+}

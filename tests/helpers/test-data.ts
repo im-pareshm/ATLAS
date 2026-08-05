@@ -1,0 +1,348 @@
+/**
+ * Test data constants and utilities.
+ * Centralized test data for consistent, maintainable tests.
+ */
+
+// Test user credentials
+export const TEST_USER = {
+  email: "test@atlas.local",
+  password: "atlas-dev-1234",
+} as const;
+
+// Default category groups (matching seed data)
+export const DEFAULT_GROUPS = [
+  { name: "Income", kind: "INCOME" as const },
+  { name: "EMI & loans", kind: "KNOWN_EXPENSE" as const },
+  { name: "Recurring bills", kind: "KNOWN_EXPENSE" as const },
+  { name: "Subscriptions", kind: "DISCRETIONARY" as const },
+  { name: "Savings & investments", kind: "SAVINGS" as const },
+  { name: "Essentials", kind: "DISCRETIONARY" as const },
+  { name: "Lifestyle", kind: "DISCRETIONARY" as const },
+  { name: "Miscellaneous", kind: "DISCRETIONARY" as const },
+] as const;
+
+// Default categories per group
+export const DEFAULT_CATEGORIES = {
+  Income: ["Salary", "Freelance", "Interest", "Other Income"],
+  "EMI & loans": ["Loan EMI", "Credit Card EMI", "Other EMI"],
+  "Recurring bills": [
+    "Electricity",
+    "Water",
+    "Internet",
+    "Phone",
+    "Gas",
+    "Rent",
+    "Insurance",
+  ],
+  Subscriptions: [
+    "Streaming",
+    "Software",
+    "Gym",
+    "News",
+    "Other Subscriptions",
+  ],
+  "Savings & investments": [
+    "Emergency Fund",
+    "Stocks",
+    "Mutual Funds",
+    "PPF",
+    "NPS",
+    "Gold",
+    "Other Investments",
+  ],
+  Essentials: [
+    "Groceries",
+    "Transport",
+    "Healthcare",
+    "Education",
+    "Household",
+  ],
+  Lifestyle: [
+    "Dining Out",
+    "Entertainment",
+    "Shopping",
+    "Travel",
+    "Hobbies",
+    "Personal Care",
+  ],
+  Miscellaneous: ["Gifts", "Donations", "Repairs", "Other"],
+} as const;
+
+// Currency helpers
+export const RUPEE_SYMBOL = "\u20B9";
+
+/**
+ * Convert rupees to paise (integer)
+ */
+export function rupeesToPaise(rupees: number): number {
+  return Math.round(rupees * 100);
+}
+
+/**
+ * Convert paise to rupees (float)
+ */
+export function paiseToRupees(paise: number): number {
+  return paise / 100;
+}
+
+/**
+ * Format paise as INR string with Indian digit grouping
+ * e.g., 120000 -> "\u20B91,20,000"
+ */
+export function formatINR(paise: number): string {
+  const rupees = paiseToRupees(paise);
+  const sign = rupees < 0 ? "-" : "";
+  const abs = Math.abs(rupees);
+  const formatted = abs.toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+  return `${sign}${RUPEE_SYMBOL}${formatted}`;
+}
+
+/**
+ * Format paise as INR without symbol
+ */
+export function formatINRPlain(paise: number): string {
+  const rupees = paiseToRupees(paise);
+  const sign = rupees < 0 ? "-" : "";
+  const abs = Math.abs(rupees);
+  return `${sign}${abs.toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+}
+
+/**
+ * Create group data for tests
+ */
+export function createGroupData(
+  overrides: Partial<{
+    name: string;
+    kind: "INCOME" | "KNOWN_EXPENSE" | "SAVINGS" | "DISCRETIONARY";
+  }> = {},
+) {
+  return {
+    name: overrides.name ?? `Test Group ${Date.now()}`,
+    kind: overrides.kind ?? "DISCRETIONARY",
+  };
+}
+
+/**
+ * Create category data for tests
+ */
+export function createCategoryData(
+  overrides: Partial<{
+    name: string;
+    groupName: string;
+  }> = {},
+) {
+  return {
+    name: overrides.name ?? `Test Category ${Date.now()}`,
+    groupName: overrides.groupName ?? "Miscellaneous",
+  };
+}
+
+/**
+ * Create recurring template data for tests
+ */
+export function createRecurringData(
+  overrides: Partial<{
+    description: string;
+    category: string;
+    amount: number;
+    frequency: "MONTHLY" | "WEEKLY" | "YEARLY";
+    dayOfMonth: number;
+    isActive: boolean;
+  }> = {},
+) {
+  return {
+    description: overrides.description ?? `Test Recurring ${Date.now()}`,
+    category: overrides.category ?? "Streaming",
+    amount: overrides.amount ?? 500,
+    frequency: overrides.frequency ?? "MONTHLY",
+    dayOfMonth: overrides.dayOfMonth ?? 1,
+    isActive: overrides.isActive ?? true,
+  };
+}
+
+/**
+ * Create known expense data for tests
+ */
+export function createKnownExpenseData(
+  overrides: Partial<{
+    description: string;
+    category: string;
+    amount: number;
+    status: "PENDING" | "PAID" | "SKIPPED";
+  }> = {},
+) {
+  return {
+    description: overrides.description ?? `Test Known ${Date.now()}`,
+    category: overrides.category ?? "Loan EMI",
+    amount: overrides.amount ?? 10000,
+    status: overrides.status ?? "PENDING",
+  };
+}
+
+/**
+ * Create discretionary expense data for tests
+ */
+export function createExpenseData(
+  overrides: Partial<{
+    description: string;
+    category: string;
+    amount: number;
+    date: string;
+  }> = {},
+) {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+
+  return {
+    description: overrides.description ?? `Test Expense ${Date.now()}`,
+    category: overrides.category ?? "Groceries",
+    amount: overrides.amount ?? 500,
+    date: overrides.date ?? `${year}-${month}-${day}`,
+  };
+}
+
+/**
+ * Create person data for tests
+ */
+export function createPersonData(
+  overrides: Partial<{
+    name: string;
+  }> = {},
+) {
+  return {
+    name: overrides.name ?? `Test Person ${Date.now()}`,
+  };
+}
+
+/**
+ * Create ledger entry data for tests
+ */
+export function createLedgerEntryData(
+  overrides: Partial<{
+    description: string;
+    amount: number;
+    direction: "RECEIVED" | "GIVEN";
+    date: string;
+  }> = {},
+) {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+
+  return {
+    description: overrides.description ?? `Test Ledger ${Date.now()}`,
+    amount: overrides.amount ?? 1000,
+    direction: overrides.direction ?? "RECEIVED",
+    date: overrides.date ?? `${year}-${month}-${day}`,
+  };
+}
+
+/**
+ * Create fund data for tests
+ */
+export function createFundData(
+  overrides: Partial<{
+    name: string;
+    balance: number;
+  }> = {},
+) {
+  return {
+    name: overrides.name ?? `Test Fund ${Date.now()}`,
+    balance: overrides.balance ?? 50000,
+  };
+}
+
+/**
+ * Generate unique test identifier
+ */
+export function uniqueId(prefix: string = "test"): string {
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+}
+
+/**
+ * Slugify a string for use in test IDs
+ */
+export function slugify(str: string): string {
+  return str
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/[\s_-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+/**
+ * Get current month in YYYY-MM format
+ */
+export function getCurrentMonth(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+}
+
+/**
+ * Get previous month in YYYY-MM format
+ */
+export function getPreviousMonth(): string {
+  const now = new Date();
+  const year = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
+  const month = now.getMonth() === 0 ? 12 : now.getMonth();
+  return `${year}-${String(month).padStart(2, "0")}`;
+}
+
+/**
+ * Get next month in YYYY-MM format
+ */
+export function getNextMonth(): string {
+  const now = new Date();
+  const year = now.getMonth() === 11 ? now.getFullYear() + 1 : now.getFullYear();
+  const month = now.getMonth() === 11 ? 1 : now.getMonth() + 2;
+  return `${year}-${String(month).padStart(2, "0")}`;
+}
+
+/**
+ * Wait for a condition with timeout
+ */
+export async function waitFor(
+  condition: () => Promise<boolean>,
+  timeoutMs: number = 5000,
+  intervalMs: number = 100,
+): Promise<void> {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    if (await condition()) return;
+    await new Promise((resolve) => setTimeout(resolve, intervalMs));
+  }
+  throw new Error(`Condition not met within ${timeoutMs}ms`);
+}
+
+/**
+ * Retry a function with exponential backoff
+ */
+export async function retry<T>(
+  fn: () => Promise<T>,
+  maxAttempts: number = 3,
+  baseDelayMs: number = 500,
+): Promise<T> {
+  let lastError: Error;
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error as Error;
+      if (attempt < maxAttempts) {
+        const delay = baseDelayMs * Math.pow(2, attempt - 1);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+    }
+  }
+  throw lastError!;
+}

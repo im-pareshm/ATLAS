@@ -60,33 +60,40 @@ export default async function KnownPage({
     itemsByGroup.set(t.category.groupId, list);
   }
 
-  let knownPaidPaise = 0;
-  let knownPlannedPaise = 0;
-
-  const buckets: BucketDTO[] = groups.map((g, i) => {
+  const bucketMetrics = groups.map((g, i) => {
     const items = itemsByGroup.get(g.id) ?? [];
     const active = items.filter((it) => it.status !== "SKIPPED");
-    const planned = active.reduce((s, it) => s + it.amountPaise, 0);
+    const planned = active.reduce((sum, item) => sum + item.amountPaise, 0);
     const paid = active
       .filter((it) => it.status === "PAID")
-      .reduce((s, it) => s + it.amountPaise, 0);
-    knownPaidPaise += paid;
-    knownPlannedPaise += planned;
+      .reduce((sum, item) => sum + item.amountPaise, 0);
     const palette = BUCKET_PALETTE[i % BUCKET_PALETTE.length];
+
     return {
-      id: g.id,
-      name: g.name,
-      color: palette.color,
-      tint: palette.tint,
-      categories: g.categories,
-      items,
-      plannedPaise: planned,
-      paidPaise: paid,
-      pct: planned > 0 ? Math.round((paid / planned) * 100) : 0,
-      doneCount: active.filter((it) => it.status === "PAID").length,
-      activeCount: active.length,
+      bucket: {
+        id: g.id,
+        name: g.name,
+        color: palette.color,
+        tint: palette.tint,
+        categories: g.categories,
+        items,
+        plannedPaise: planned,
+        paidPaise: paid,
+        pct: planned > 0 ? Math.round((paid / planned) * 100) : 0,
+        doneCount: active.filter((it) => it.status === "PAID").length,
+        activeCount: active.length,
+      } satisfies BucketDTO,
+      planned,
+      paid,
     };
   });
+
+  const buckets = bucketMetrics.map(({ bucket }) => bucket);
+  const knownPaidPaise = bucketMetrics.reduce((sum, entry) => sum + entry.paid, 0);
+  const knownPlannedPaise = bucketMetrics.reduce(
+    (sum, entry) => sum + entry.planned,
+    0,
+  );
 
   return (
     <div>
