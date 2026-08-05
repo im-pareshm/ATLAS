@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useActionState, useEffect, useRef, useState, useTransition } from "react";
 import { CATEGORY_KINDS, KIND_COLORS, type CategoryKind } from "@/lib/constants";
 import {
   createGroup,
@@ -50,7 +50,11 @@ function KindBadge({ kind }: { kind: CategoryKind }) {
 
 function KindSelect({ defaultValue }: { defaultValue?: CategoryKind }) {
   return (
-    <select name="kind" defaultValue={defaultValue ?? "DISCRETIONARY"} className={inputCls}>
+    <select
+      name="kind"
+      defaultValue={defaultValue ?? "DISCRETIONARY"}
+      className={inputCls}
+    >
       {CATEGORY_KINDS.map((k) => (
         <option key={k} value={k}>
           {KIND_LABELS[k]}
@@ -101,7 +105,11 @@ function AddCategoryForm({ groupId }: { groupId: string }) {
   return (
     <form ref={formRef} action={action} className="mt-2 flex items-center gap-2">
       <input type="hidden" name="groupId" value={groupId} />
-      <input name="name" placeholder="Add category…" className={`${inputCls} flex-1`} />
+      <input
+        name="name"
+        placeholder="Add category..."
+        className={`${inputCls} flex-1`}
+      />
       <button type="submit" disabled={pending} className={ghostBtn}>
         + Add
       </button>
@@ -154,7 +162,7 @@ function DeleteButton({
           title={confirmLabel}
           className="rounded-[7px] px-2 py-1 text-[12px] text-icondim transition-colors hover:bg-clay-tint hover:text-clay"
         >
-          ✕
+          x
         </button>
       )}
       {state.error ? (
@@ -177,14 +185,14 @@ function MoveButtons({
         <input type="hidden" name="id" value={id} />
         <input type="hidden" name="dir" value="up" />
         <button type="submit" className={ghostBtn} title="Move up">
-          ↑
+          ^
         </button>
       </form>
       <form action={action}>
         <input type="hidden" name="id" value={id} />
         <input type="hidden" name="dir" value="down" />
         <button type="submit" className={ghostBtn} title="Move down">
-          ↓
+          v
         </button>
       </form>
     </span>
@@ -193,18 +201,23 @@ function MoveButtons({
 
 function CategoryRow({ cat }: { cat: CategoryDTO }) {
   const [editing, setEditing] = useState(false);
-  const [state, action, pending] = useActionState<ActionState, FormData>(
-    updateCategory,
-    {},
-  );
-  useEffect(() => {
-    if (state.ok) setEditing(false);
-  }, [state.ok]);
+  const [state, setState] = useState<ActionState>({});
+  const [pending, startTransition] = useTransition();
+
+  async function submitUpdate(formData: FormData) {
+    startTransition(async () => {
+      const result = await updateCategory({}, formData);
+      setState(result);
+      if (result.ok) {
+        setEditing(false);
+      }
+    });
+  }
 
   return (
     <div className="flex items-center gap-2 border-t border-divider py-2">
       {editing ? (
-        <form action={action} className="flex flex-1 items-center gap-2">
+        <form action={submitUpdate} className="flex flex-1 items-center gap-2">
           <input type="hidden" name="id" value={cat.id} />
           <input
             name="name"
@@ -250,18 +263,23 @@ function CategoryRow({ cat }: { cat: CategoryDTO }) {
 
 function GroupCard({ group }: { group: GroupDTO }) {
   const [editing, setEditing] = useState(false);
-  const [state, action, pending] = useActionState<ActionState, FormData>(
-    updateGroup,
-    {},
-  );
-  useEffect(() => {
-    if (state.ok) setEditing(false);
-  }, [state.ok]);
+  const [state, setState] = useState<ActionState>({});
+  const [pending, startTransition] = useTransition();
+
+  async function submitUpdate(formData: FormData) {
+    startTransition(async () => {
+      const result = await updateGroup({}, formData);
+      setState(result);
+      if (result.ok) {
+        setEditing(false);
+      }
+    });
+  }
 
   return (
     <div className="rounded-card bg-card p-[18px_20px] shadow-card">
       {editing ? (
-        <form action={action} className="flex flex-wrap items-center gap-2">
+        <form action={submitUpdate} className="flex flex-wrap items-center gap-2">
           <input type="hidden" name="id" value={group.id} />
           <input
             name="name"

@@ -16,11 +16,15 @@ const LINKS: { href: string; label: string }[] = [
   { href: "/categories", label: "Categories" },
 ];
 
+function navTestId(label: string): string {
+  return `nav-${label.toLowerCase()}`;
+}
+
 export default function Nav() {
   const pathname = usePathname();
 
   return (
-    <nav className="flex w-max items-center gap-1">
+    <nav data-testid="nav" className="flex w-max items-center gap-1">
       {LINKS.map((link) => {
         const active =
           link.href === "/"
@@ -30,6 +34,8 @@ export default function Nav() {
           <Link
             key={link.href}
             href={link.href}
+            data-testid={navTestId(link.label)}
+            aria-current={active ? "page" : undefined}
             className={
               "shrink-0 rounded-[9px] px-3 py-[7px] text-[13px] font-semibold transition-colors " +
               (active

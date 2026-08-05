@@ -1,5 +1,5 @@
 // Money helpers. Amounts are stored as integer paise. Display uses the Indian
-// digit-grouping system (1,20,000 not 120,000) and the minus sign U+2212 (−).
+// digit-grouping system (1,20,000 not 120,000) and a leading currency sign.
 
 export function rupeesToPaise(rupees: number): number {
   return Math.round(rupees * 100);
@@ -22,7 +22,7 @@ function groupIndian(n: number): string {
 export function formatINR(paise: number): string {
   const neg = paise < 0;
   const rupees = Math.round(Math.abs(paise) / 100);
-  return (neg ? "−" : "") + "₹" + groupIndian(rupees);
+  return `${neg ? "-" : ""}\u20B9${groupIndian(rupees)}`;
 }
 
 /** Signed variant that always shows the leading sign for negatives. */
