@@ -3,6 +3,7 @@
 import { useSyncExternalStore } from "react";
 
 type Theme = "light" | "dark";
+const THEME_COOKIE = "atlas-theme";
 
 function subscribe(onStoreChange: () => void) {
   if (typeof window === "undefined") {
@@ -41,7 +42,8 @@ export default function ThemeToggle() {
     const next: Theme = isDark ? "light" : "dark";
     document.documentElement.dataset.theme = next;
     try {
-      localStorage.setItem("atlas-theme", next);
+      localStorage.setItem(THEME_COOKIE, next);
+      document.cookie = `${THEME_COOKIE}=${next}; path=/; max-age=31536000; samesite=lax`;
     } catch {
       // ignore storage errors
     }
@@ -53,9 +55,10 @@ export default function ThemeToggle() {
       data-testid="nav-theme-toggle"
       type="button"
       onClick={toggle}
-      aria-label="Toggle theme"
-      title="Toggle theme"
-      className="flex h-10 w-10 flex-none items-center justify-center rounded-full border border-line text-secondary transition-colors hover:bg-divider active:bg-divider"
+      aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
+      aria-pressed={isDark}
+      title={isDark ? "Switch to light theme" : "Switch to dark theme"}
+      className="atlas-focus-ring atlas-touch flex flex-none items-center justify-center rounded-full border border-line text-secondary transition-colors hover:bg-divider active:bg-divider"
     >
       {isDark ? (
         <svg

@@ -13,9 +13,9 @@ import {
 import { formatINR } from "@/lib/money";
 import {
   createRecurring,
-  updateRecurring,
-  toggleRecurring,
   deleteRecurring,
+  toggleRecurring,
+  updateRecurring,
   type ActionState,
 } from "./actions";
 
@@ -26,19 +26,47 @@ export type TemplateDTO = {
   categoryId: string;
   categoryLabel: string;
   amountPaise: number;
+  intervalMonths: number;
+  startYear: number;
+  startMonth: number;
+  nextDueLabel: string;
   isActive: boolean;
 };
 
 const inputCls =
-  "rounded-[10px] border border-inputborder bg-inputbg px-3 py-2 text-[13.5px] outline-none transition-colors placeholder:text-faint2 focus:border-teal/45 focus-visible:outline-none";
+  "atlas-focus-ring atlas-input rounded-[10px] border border-inputborder bg-inputbg px-3 py-2 text-[13.5px] outline-none transition-colors placeholder:text-faint2 focus:border-teal/45 focus-visible:outline-none";
 const actionBtn =
-  "inline-flex h-8 items-center justify-center gap-1.5 rounded-[8px] px-3 text-[12px] font-semibold text-secondary transition-all hover:bg-divider hover:text-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:rgba(79,124,107,0.32)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-45";
+  "atlas-focus-ring atlas-touch inline-flex items-center justify-center gap-1.5 rounded-[10px] px-3 text-[12px] font-semibold text-secondary transition-all hover:bg-divider hover:text-strong active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-45";
 const primaryBtn =
-  "inline-flex h-9 items-center justify-center rounded-[10px] bg-teal px-4 text-[13px] font-bold text-white transition-colors hover:bg-teal-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:rgba(79,124,107,0.32)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60";
+  "atlas-focus-ring atlas-touch inline-flex items-center justify-center rounded-[10px] bg-teal px-4 text-[13px] font-bold text-white transition-colors hover:bg-teal-hover active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60";
 const subtleBtn =
-  "inline-flex h-9 items-center justify-center rounded-[10px] border border-inputborder bg-card px-4 text-[13px] font-semibold text-secondary transition-colors hover:bg-divider hover:text-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:rgba(79,124,107,0.2)] active:scale-[0.98]";
+  "atlas-focus-ring atlas-touch inline-flex items-center justify-center rounded-[10px] border border-inputborder bg-card px-4 text-[13px] font-semibold text-secondary transition-colors hover:bg-divider hover:text-strong active:scale-[0.98]";
 const dangerBtn =
-  "inline-flex h-9 items-center justify-center rounded-[10px] bg-[rgba(176,122,104,0.14)] px-4 text-[13px] font-semibold text-clay transition-colors hover:bg-[rgba(176,122,104,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:rgba(176,122,104,0.28)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50";
+  "atlas-focus-ring atlas-touch inline-flex items-center justify-center rounded-[10px] bg-[color:var(--color-clay-tint)] px-4 text-[13px] font-semibold text-clay transition-colors hover:bg-clay hover:text-white active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50";
+
+const INTERVAL_OPTIONS = [
+  { value: "1", label: "Every month" },
+  { value: "2", label: "Every 2 months" },
+  { value: "3", label: "Every 3 months" },
+  { value: "4", label: "Every 4 months" },
+  { value: "6", label: "Every 6 months" },
+  { value: "12", label: "Every 12 months" },
+] as const;
+
+function toMonthInputValue(year: number, month: number): string {
+  return `${year}-${String(month).padStart(2, "0")}`;
+}
+
+function getCurrentMonthValue(): string {
+  const today = new Date();
+  return toMonthInputValue(today.getUTCFullYear(), today.getUTCMonth() + 1);
+}
+
+function intervalLabel(intervalMonths: number): string {
+  return intervalMonths === 1
+    ? "Every month"
+    : `Every ${intervalMonths} months`;
+}
 
 function PauseIcon() {
   return (
@@ -141,7 +169,7 @@ function WarningIcon() {
       height="18"
       viewBox="0 0 24 24"
       fill="none"
-      stroke="#d78b14"
+      stroke="var(--color-warning)"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -154,18 +182,28 @@ function WarningIcon() {
   );
 }
 
-function AmountInput({ defaultValue }: { defaultValue?: number }) {
+function AmountInput({
+  defaultValue,
+  testId,
+  id,
+}: {
+  defaultValue?: number;
+  testId?: string;
+  id: string;
+}) {
   return (
-    <div className="flex items-center rounded-[10px] border border-inputborder bg-inputbg px-[10px] transition-colors focus-within:border-teal/45">
+    <div className="flex min-h-[44px] items-center rounded-[10px] border border-inputborder bg-inputbg px-[10px] transition-colors focus-within:border-teal/45">
       <span className="text-[12px] text-faint2">Rs</span>
       <input
+        id={id}
+        data-testid={testId}
         name="amount"
         type="number"
         min="0"
         step="1"
         defaultValue={defaultValue}
         placeholder="0"
-        className="num w-[96px] border-none bg-transparent px-1 py-2 text-right text-[13.5px] font-semibold outline-none"
+        className="num w-full min-w-[84px] border-none bg-transparent px-1 py-2 text-right text-[13.5px] font-semibold outline-none"
       />
     </div>
   );
@@ -174,15 +212,21 @@ function AmountInput({ defaultValue }: { defaultValue?: number }) {
 function CategorySelect({
   categories,
   defaultValue,
+  testId,
+  id,
 }: {
   categories: CategoryOption[];
   defaultValue?: string;
+  testId?: string;
+  id: string;
 }) {
   return (
     <select
+      id={id}
+      data-testid={testId}
       name="categoryId"
       defaultValue={defaultValue ?? categories[0]?.id}
-      className={`${inputCls} min-w-[220px]`}
+      className={`${inputCls} w-full min-w-0`}
     >
       {categories.map((c) => (
         <option key={c.id} value={c.id}>
@@ -193,10 +237,59 @@ function CategorySelect({
   );
 }
 
+function IntervalSelect({
+  defaultValue,
+  testId,
+  id,
+}: {
+  defaultValue?: number;
+  testId?: string;
+  id: string;
+}) {
+  return (
+    <select
+      id={id}
+      data-testid={testId}
+      name="intervalMonths"
+      defaultValue={String(defaultValue ?? 1)}
+      className={`${inputCls} w-full min-w-0`}
+    >
+      {INTERVAL_OPTIONS.map((option) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
+    </select>
+  );
+}
+
+function StartMonthInput({
+  defaultValue,
+  testId,
+  id,
+}: {
+  defaultValue?: string;
+  testId?: string;
+  id: string;
+}) {
+  return (
+    <input
+      id={id}
+      data-testid={testId}
+      name="startAt"
+      type="month"
+      defaultValue={defaultValue ?? getCurrentMonthValue()}
+      className={`${inputCls} w-full min-w-0`}
+    />
+  );
+}
+
 function StatusBadge({ isActive }: { isActive: boolean }) {
-  const dotColor = isActive ? "#4f7c6b" : "#d78b14";
-  const bgColor = isActive ? "rgba(79,124,107,0.14)" : "rgba(245,158,11,0.14)";
-  const textColor = isActive ? "#4f7c6b" : "#d78b14";
+  const dotColor = isActive ? "var(--color-teal)" : "var(--color-warning)";
+  const bgColor = isActive
+    ? "color-mix(in srgb, var(--color-teal) 14%, transparent)"
+    : "var(--color-warning-tint)";
+  const textColor = isActive ? "var(--color-teal)" : "var(--color-warning)";
 
   return (
     <span
@@ -221,27 +314,93 @@ function CreateForm({ categories }: { categories: CategoryOption[] }) {
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
-    if (state.ok) formRef.current?.reset();
+    if (!state.ok) return;
+    formRef.current?.reset();
+    const monthInput = formRef.current?.elements.namedItem(
+      "startAt",
+    ) as HTMLInputElement | null;
+    if (monthInput) monthInput.value = getCurrentMonthValue();
   }, [state.ok]);
 
   return (
     <form
       ref={formRef}
       action={action}
-      className="flex flex-wrap items-center gap-2"
+      data-testid="recurring-create-form"
+      className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(0,1.7fr)_minmax(0,1.1fr)_160px_180px_180px_auto]"
     >
-      <input
-        name="description"
-        placeholder="e.g. Netflix, 2L loan EMI, SIP"
-        className={`${inputCls} min-w-[180px] flex-1`}
-      />
-      <CategorySelect categories={categories} />
-      <AmountInput />
-      <button type="submit" disabled={pending} className={primaryBtn}>
-        Add monthly
-      </button>
+      <div className="min-w-0 sm:col-span-2 xl:col-span-1">
+        <label
+          htmlFor="recurring-create-description"
+          className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.08em] text-faint2"
+        >
+          Name
+        </label>
+        <input
+          id="recurring-create-description"
+          data-testid="recurring-create-description"
+          name="description"
+          placeholder="e.g. Health insurance premium"
+          className={`${inputCls} w-full`}
+        />
+      </div>
+      <div className="min-w-0">
+        <label
+          htmlFor="recurring-create-category"
+          className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.08em] text-faint2"
+        >
+          Category
+        </label>
+        <CategorySelect
+          categories={categories}
+          id="recurring-create-category"
+          testId="recurring-create-category"
+        />
+      </div>
+      <div className="min-w-0">
+        <label
+          htmlFor="recurring-create-amount"
+          className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.08em] text-faint2"
+        >
+          Amount
+        </label>
+        <AmountInput id="recurring-create-amount" testId="recurring-create-amount" />
+      </div>
+      <div className="min-w-0">
+        <label
+          htmlFor="recurring-create-interval"
+          className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.08em] text-faint2"
+        >
+          Repeats
+        </label>
+        <IntervalSelect id="recurring-create-interval" testId="recurring-create-interval" />
+      </div>
+      <div className="min-w-0">
+        <label
+          htmlFor="recurring-create-start"
+          className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.08em] text-faint2"
+        >
+          First due month
+        </label>
+        <StartMonthInput id="recurring-create-start" testId="recurring-create-start" />
+      </div>
+      <div className="flex items-end">
+        <button
+          data-testid="recurring-create-submit"
+          type="submit"
+          disabled={pending}
+          className={`${primaryBtn} w-full xl:w-auto`}
+        >
+          Add recurring
+        </button>
+      </div>
       {state.error ? (
-        <span className="text-[12.5px] text-clay">{state.error}</span>
+        <span
+          data-testid="recurring-create-error"
+          className="sm:col-span-2 xl:col-span-full text-[12.5px] text-clay"
+        >
+          {state.error}
+        </span>
       ) : null}
     </form>
   );
@@ -254,6 +413,7 @@ function TemplateRow({
   template: TemplateDTO;
   categories: CategoryOption[];
 }) {
+  const slug = template.id;
   const formId = useId();
   const menuRef = useRef<HTMLDivElement>(null);
   const [mode, setMode] = useState<"view" | "edit" | "delete">("view");
@@ -325,132 +485,162 @@ function TemplateRow({
   }
 
   return (
-    <div className="border-t border-divider py-4 first:border-t-0">
-      <div className="grid gap-x-4 gap-y-3 md:grid-cols-[minmax(0,1.45fr)_minmax(0,1.2fr)_120px_120px_220px] md:items-center">
-        <div className="min-w-0">
-          <div className="truncate text-[14px] font-medium text-strong">
-            {description}
+    <div
+      data-testid={`recurring-template-${slug}`}
+      className="border-t border-divider py-4 first:border-t-0"
+    >
+      <div className="grid gap-4">
+        <div className="grid gap-3 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)_auto_auto] lg:items-start">
+          <div className="min-w-0">
+            <div
+              data-testid="template-description"
+              className="truncate text-[14px] font-medium text-strong"
+            >
+              {description}
+            </div>
+            <div
+              data-testid="template-category"
+              className="truncate text-[11.5px] text-faint"
+            >
+              {template.categoryLabel}
+            </div>
           </div>
-          <div className="truncate text-[11.5px] text-faint">
-            {template.categoryLabel}
+
+          <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-[minmax(0,1fr)_140px_120px]">
+            <div className="min-w-0 text-[12.5px] text-secondary">
+              <div data-testid="template-cadence" className="font-medium text-strong">
+                {intervalLabel(template.intervalMonths)}
+              </div>
+              <div data-testid="template-next-due" className="truncate text-faint">
+                Next due {template.nextDueLabel}
+              </div>
+            </div>
+            <div
+              data-testid="template-amount"
+              className="num text-[13.5px] font-semibold text-strong sm:text-right"
+            >
+              {formatINR(template.amountPaise)}
+            </div>
+            <div data-testid="template-status" className="sm:justify-self-end">
+              <StatusBadge isActive={optimisticActive} />
+            </div>
           </div>
-        </div>
 
-        <div className="hidden min-w-0 text-[13px] text-secondary md:block">
-          <span className="truncate">{template.categoryLabel}</span>
-        </div>
-
-        <div className="num text-[13.5px] font-semibold text-strong">
-          {formatINR(template.amountPaise)}
-          <span className="ml-1 text-[11px] font-normal text-faint">/mo</span>
-        </div>
-
-        <div>
-          <StatusBadge isActive={optimisticActive} />
-        </div>
-
-        <div
-          className="relative flex min-h-9 items-center justify-start gap-2 md:justify-end"
-          ref={menuRef}
-        >
-          {isEditing ? (
-            <>
-              <button
-                type="button"
-                form={formId}
-                disabled={pending}
-                className={primaryBtn}
-              >
-                Save
-              </button>
-              <button
-                type="button"
-                onClick={handleCancelInlineState}
-                className={subtleBtn}
-              >
-                Cancel
-              </button>
-            </>
-          ) : isDeleteConfirming ? (
-            <>
-              <button
-                type="button"
-                onClick={handleCancelInlineState}
-                className={subtleBtn}
-              >
-                Cancel
-              </button>
-              <form action={deleteRecurring}>
-                <input type="hidden" name="id" value={template.id} />
-                <button type="submit" className={dangerBtn}>
-                  Delete
-                </button>
-              </form>
-            </>
-          ) : (
-            <>
-              <button
-                type="button"
-                onClick={handleToggle}
-                disabled={togglePending}
-                className={actionBtn}
-              >
-                {optimisticActive ? <PauseIcon /> : <ResumeIcon />}
-                {optimisticActive ? "Pause" : "Resume"}
-              </button>
-              <button
-                type="button"
-                onClick={handleStartEdit}
-                className={actionBtn}
-              >
-                <EditIcon />
-                Edit
-              </button>
-              <button
-                type="button"
-                onClick={() => setMenuOpen((open) => !open)}
-                aria-haspopup="menu"
-                aria-expanded={menuOpen}
-                aria-label={`More actions for ${description}`}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-[8px] text-muted transition-all hover:bg-divider hover:text-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:rgba(79,124,107,0.32)] active:scale-[0.98]"
-              >
-                <MoreIcon />
-              </button>
-
-              {menuOpen ? (
-                <div
-                  role="menu"
-                  aria-label={`More actions for ${description}`}
-                  className="absolute right-0 top-[calc(100%+8px)] z-20 min-w-[180px] rounded-[14px] border border-line bg-card p-1.5 shadow-[0_18px_40px_-24px_rgba(0,0,0,0.45)]"
+          <div className="flex flex-wrap gap-2 lg:col-span-2 lg:justify-end" ref={menuRef}>
+            {isEditing ? (
+              <>
+                <button
+                  data-testid="template-edit-submit"
+                  type="button"
+                  form={formId}
+                  disabled={pending}
+                  className={primaryBtn}
                 >
+                  Save
+                </button>
+                <button
+                  data-testid="template-edit-cancel"
+                  type="button"
+                  onClick={handleCancelInlineState}
+                  className={subtleBtn}
+                >
+                  Cancel
+                </button>
+              </>
+            ) : isDeleteConfirming ? (
+              <>
+                <button
+                  type="button"
+                  onClick={handleCancelInlineState}
+                  className={subtleBtn}
+                >
+                  Cancel
+                </button>
+                <form action={deleteRecurring}>
+                  <input type="hidden" name="id" value={template.id} />
                   <button
-                    type="button"
-                    role="menuitem"
-                    onClick={handleStartDelete}
-                    className="flex w-full items-center gap-2 rounded-[10px] px-3 py-2 text-left text-[12.5px] font-medium text-clay transition-colors hover:bg-clay-tint focus-visible:outline-none focus-visible:bg-clay-tint"
+                    data-testid="template-delete-confirm"
+                    type="submit"
+                    className={dangerBtn}
                   >
-                    <DeleteIcon />
                     Delete
                   </button>
-                </div>
-              ) : null}
-            </>
-          )}
+                </form>
+              </>
+            ) : (
+              <>
+                <button
+                  data-testid="template-status-btn"
+                  type="button"
+                  onClick={handleToggle}
+                  disabled={togglePending}
+                  className={actionBtn}
+                >
+                  {optimisticActive ? <PauseIcon /> : <ResumeIcon />}
+                  {optimisticActive ? "Pause" : "Resume"}
+                </button>
+                <button
+                  data-testid="template-edit"
+                  type="button"
+                  onClick={handleStartEdit}
+                  className={actionBtn}
+                >
+                  <EditIcon />
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMenuOpen((open) => !open)}
+                  aria-haspopup="menu"
+                  aria-expanded={menuOpen}
+                  aria-label={`More actions for ${description}`}
+                  className="atlas-focus-ring atlas-icon-button inline-flex items-center justify-center text-muted transition-all hover:bg-divider hover:text-strong active:scale-[0.98]"
+                >
+                  <MoreIcon />
+                </button>
+
+                {menuOpen ? (
+                  <div
+                    role="menu"
+                    aria-label={`More actions for ${description}`}
+                    className="absolute right-0 top-[calc(100%+8px)] z-20 min-w-[180px] rounded-[14px] border border-line bg-card p-1.5 shadow-[0_18px_40px_-24px_rgba(0,0,0,0.45)]"
+                  >
+                    <button
+                      data-testid="template-delete"
+                      type="button"
+                      role="menuitem"
+                      onClick={handleStartDelete}
+                      className="atlas-focus-ring atlas-touch flex w-full items-center gap-2 rounded-[10px] px-3 text-left text-[12.5px] font-medium text-clay transition-colors hover:bg-clay-tint focus-visible:bg-clay-tint"
+                    >
+                      <DeleteIcon />
+                      Delete
+                    </button>
+                  </div>
+                ) : null}
+              </>
+            )}
+          </div>
         </div>
 
         {isEditing ? (
           <form
             id={formId}
             action={action}
-            className="rounded-[14px] border border-line bg-inputbg/55 p-4 md:col-span-full"
+            data-testid={`recurring-edit-form-${slug}`}
+            className="rounded-[14px] border border-line bg-inputbg/55 p-4"
           >
             <input type="hidden" name="id" value={template.id} />
-            <div className="grid gap-3 md:grid-cols-[minmax(0,1.15fr)_minmax(220px,0.95fr)_120px]">
-              <div className="min-w-0">
-                <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.08em] text-faint2">
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)_160px_180px_180px]">
+              <div className="min-w-0 sm:col-span-2 xl:col-span-1">
+                <label
+                  htmlFor={`template-edit-description-${slug}`}
+                  className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.08em] text-faint2"
+                >
                   Name
                 </label>
                 <input
+                  id={`template-edit-description-${slug}`}
+                  data-testid={`template-edit-description-${slug}`}
                   name="description"
                   defaultValue={template.description}
                   placeholder="Description"
@@ -458,19 +648,60 @@ function TemplateRow({
                 />
               </div>
               <div className="min-w-0">
-                <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.08em] text-faint2">
+                <label
+                  htmlFor={`template-edit-category-${slug}`}
+                  className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.08em] text-faint2"
+                >
                   Category
                 </label>
                 <CategorySelect
                   categories={categories}
                   defaultValue={template.categoryId}
+                  id={`template-edit-category-${slug}`}
+                  testId={`template-edit-category-${slug}`}
                 />
               </div>
-              <div>
-                <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.08em] text-faint2">
+              <div className="min-w-0">
+                <label
+                  htmlFor={`template-edit-amount-${slug}`}
+                  className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.08em] text-faint2"
+                >
                   Amount
                 </label>
-                <AmountInput defaultValue={Math.round(template.amountPaise / 100)} />
+                <AmountInput
+                  defaultValue={Math.round(template.amountPaise / 100)}
+                  id={`template-edit-amount-${slug}`}
+                  testId={`template-edit-amount-${slug}`}
+                />
+              </div>
+              <div className="min-w-0">
+                <label
+                  htmlFor={`template-edit-interval-${slug}`}
+                  className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.08em] text-faint2"
+                >
+                  Repeats
+                </label>
+                <IntervalSelect
+                  defaultValue={template.intervalMonths}
+                  id={`template-edit-interval-${slug}`}
+                  testId={`template-edit-interval-${slug}`}
+                />
+              </div>
+              <div className="min-w-0">
+                <label
+                  htmlFor={`template-edit-start-${slug}`}
+                  className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.08em] text-faint2"
+                >
+                  First due month
+                </label>
+                <StartMonthInput
+                  defaultValue={toMonthInputValue(
+                    template.startYear,
+                    template.startMonth,
+                  )}
+                  id={`template-edit-start-${slug}`}
+                  testId={`template-edit-start-${slug}`}
+                />
               </div>
             </div>
             {state.error ? (
@@ -480,9 +711,12 @@ function TemplateRow({
         ) : null}
 
         {isDeleteConfirming ? (
-          <div className="rounded-[14px] border border-line bg-inputbg/45 p-4 md:col-span-full">
+          <div className="rounded-[14px] border border-line bg-inputbg/45 p-4">
             <div className="flex items-start gap-3">
-              <div className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-[10px] bg-[rgba(245,158,11,0.1)]">
+              <div
+                className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-[10px]"
+                style={{ background: "var(--color-warning-tint)" }}
+              >
                 <WarningIcon />
               </div>
               <div className="min-w-0">
@@ -490,7 +724,7 @@ function TemplateRow({
                   Delete &apos;{description}&apos;?
                 </p>
                 <p className="mt-1 text-[12.5px] text-secondary">
-                  This recurring expense will stop from next month.
+                  This recurring expense will stop from its next due cycle.
                 </p>
               </div>
             </div>
@@ -512,7 +746,7 @@ export default function RecurringManager({
     return (
       <p className="rounded-card bg-card p-5 text-[13px] text-secondary shadow-card">
         Add a known-expense, savings, or discretionary category first under{" "}
-        <Link href="/categories" className="font-semibold text-teal">
+        <Link href="/categories" className="atlas-focus-ring font-semibold text-teal">
           Categories
         </Link>
         .
@@ -528,8 +762,8 @@ export default function RecurringManager({
       <div className="rounded-card bg-card p-[18px_20px] shadow-card">
         {templates.length === 0 ? (
           <p className="py-2 text-[13px] text-faint">
-            No recurring templates yet. Add one above - it&apos;ll generate this
-            month&apos;s item automatically.
+            No recurring templates yet. Add one above and it will generate an item
+            in each due month automatically.
           </p>
         ) : (
           templates.map((t) => (

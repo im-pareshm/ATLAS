@@ -12,8 +12,8 @@ export type CategoryKind = (typeof CATEGORY_KINDS)[number];
 export const TXN_STATUSES = ["PENDING", "PAID", "SKIPPED"] as const;
 export type TxnStatus = (typeof TXN_STATUSES)[number];
 
-export const FREQUENCIES = ["MONTHLY"] as const;
-export type Frequency = (typeof FREQUENCIES)[number];
+export const RECURRING_INTERVAL_MONTHS = [1, 2, 3, 4, 6, 12] as const;
+export type RecurringIntervalMonths = (typeof RECURRING_INTERVAL_MONTHS)[number];
 
 export const LEDGER_DIRECTIONS = ["GIVEN", "RECEIVED"] as const;
 export type LedgerDirection = (typeof LEDGER_DIRECTIONS)[number];

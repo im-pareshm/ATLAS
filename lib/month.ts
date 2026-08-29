@@ -20,6 +20,10 @@ export function addMonths(ym: YearMonth, n: number): YearMonth {
   return { year, month: month + 1 };
 }
 
+export function monthsBetween(start: YearMonth, end: YearMonth): number {
+  return (end.year - start.year) * 12 + (end.month - start.month);
+}
+
 /** <0 if a before b, 0 if equal, >0 if a after b. */
 export function compareYM(a: YearMonth, b: YearMonth): number {
   return a.year !== b.year ? a.year - b.year : a.month - b.month;
@@ -44,6 +48,10 @@ export function monthRange(ym: YearMonth): { start: Date; end: Date } {
 
 export function formatMonth(ym: YearMonth): string {
   return `${MONTH_NAMES[ym.month - 1]} ${ym.year}`;
+}
+
+export function formatMonthShort(ym: YearMonth): string {
+  return `${MONTH_NAMES[ym.month - 1].slice(0, 3)} ${ym.year}`;
 }
 
 /** Parse "YYYY-MM" (falls back to current month on bad input). */

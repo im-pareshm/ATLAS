@@ -5,14 +5,23 @@ import {
   compareYM,
   currentYearMonth,
   firstOfMonth,
+  monthsBetween,
   type YearMonth,
 } from "@/lib/month";
 
+function isDueMonth(
+  start: YearMonth,
+  candidate: YearMonth,
+  intervalMonths: number,
+): boolean {
+  const delta = monthsBetween(start, candidate);
+  return delta >= 0 && delta % intervalMonths === 0;
+}
+
 /**
  * Lazy recurring generation. For each active template, generate the month's real
- * Transaction (and backfill any missed months) up to the current month. Known and
- * savings items are generated as PENDING (they land on the /known checklist to be
- * ticked off); anything else as PAID.
+ * Transaction (and backfill any missed due months) up to the current month.
+ * Known and savings items are generated as PENDING; anything else as PAID.
  *
  * Idempotent: the DB-level @@unique([recurringSourceId, date]) is the hard guard,
  * and lastGeneratedYear/Month is the fast check so no writes happen once caught up.
@@ -30,49 +39,60 @@ export async function ensureRecurringTransactionsGenerated(
   });
 
   for (const t of templates) {
+    const start = { year: t.startYear, month: t.startMonth };
+    if (compareYM(start, current) > 0) continue;
+
     let cursor: YearMonth =
       t.lastGeneratedYear != null && t.lastGeneratedMonth != null
         ? addMonths({ year: t.lastGeneratedYear, month: t.lastGeneratedMonth }, 1)
-        : current; // never generated → start this month, don't backfill from creation
+        : start;
 
     const kind = t.category.group.kind;
     const status =
       kind === "KNOWN_EXPENSE" || kind === "SAVINGS" ? "PENDING" : "PAID";
 
     while (compareYM(cursor, current) <= 0) {
-      const date = firstOfMonth(cursor);
-      try {
-        await prisma.$transaction([
-          prisma.transaction.create({
-            data: {
-              userId,
-              categoryId: t.categoryId,
-              description: t.description,
-              amount: t.amount,
-              status,
-              date,
-              recurringSourceId: t.id,
-            },
-          }),
-          prisma.recurringTransaction.update({
-            where: { id: t.id },
-            data: { lastGeneratedYear: cursor.year, lastGeneratedMonth: cursor.month },
-          }),
-        ]);
-      } catch (e) {
-        if (
-          e instanceof Prisma.PrismaClientKnownRequestError &&
-          e.code === "P2002"
-        ) {
-          // Already generated for this month (race/dup) — just advance the marker.
-          await prisma.recurringTransaction.update({
-            where: { id: t.id },
-            data: { lastGeneratedYear: cursor.year, lastGeneratedMonth: cursor.month },
-          });
-        } else {
-          throw e;
+      if (isDueMonth(start, cursor, t.intervalMonths)) {
+        const date = firstOfMonth(cursor);
+        try {
+          await prisma.$transaction([
+            prisma.transaction.create({
+              data: {
+                userId,
+                categoryId: t.categoryId,
+                description: t.description,
+                amount: t.amount,
+                status,
+                date,
+                recurringSourceId: t.id,
+              },
+            }),
+            prisma.recurringTransaction.update({
+              where: { id: t.id },
+              data: {
+                lastGeneratedYear: cursor.year,
+                lastGeneratedMonth: cursor.month,
+              },
+            }),
+          ]);
+        } catch (e) {
+          if (
+            e instanceof Prisma.PrismaClientKnownRequestError &&
+            e.code === "P2002"
+          ) {
+            await prisma.recurringTransaction.update({
+              where: { id: t.id },
+              data: {
+                lastGeneratedYear: cursor.year,
+                lastGeneratedMonth: cursor.month,
+              },
+            });
+          } else {
+            throw e;
+          }
         }
       }
+
       cursor = addMonths(cursor, 1);
     }
   }

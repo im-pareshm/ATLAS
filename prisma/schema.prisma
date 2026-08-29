@@ -1,6 +1,6 @@
 // ATLAS — Prisma schema
 // DB: libSQL / Turso (SQLite-compatible). NOTE: Prisma's SQLite connector does NOT
-// support enums, so kind/status/frequency/direction are String fields validated in
+// support enums, so kind/status/direction are String fields validated in
 // the app layer (see lib/constants.ts + lib/validations.ts). Money is stored as
 // integer paise. See DESIGN.md for the model rationale.
 
@@ -103,7 +103,9 @@ model RecurringTransaction {
   categoryId  String
   category    Category @relation(fields: [categoryId], references: [id])
   description String?
-  frequency   String   @default("MONTHLY") // MONTHLY (v1)
+  intervalMonths Int
+  startYear      Int
+  startMonth     Int // 1-12
   isActive    Boolean  @default(true)
 
   lastGeneratedYear  Int?

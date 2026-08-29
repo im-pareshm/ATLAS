@@ -41,6 +41,21 @@ export const recurringSchema = z.object({
   amount: z.coerce
     .number({ error: "Enter an amount" })
     .positive("Amount must be greater than 0"),
+  intervalMonths: z.coerce
+    .number({ error: "Choose how often this repeats" })
+    .int("Interval must be a whole number of months")
+    .min(1, "Interval must be at least 1 month")
+    .max(12, "Interval must be 12 months or less"),
+  startYear: z.coerce
+    .number({ error: "Choose the first due month" })
+    .int("Choose a valid year")
+    .min(2000, "Choose a valid year")
+    .max(9999, "Choose a valid year"),
+  startMonth: z.coerce
+    .number({ error: "Choose the first due month" })
+    .int("Choose a valid month")
+    .min(1, "Choose a valid month")
+    .max(12, "Choose a valid month"),
 });
 
 export const recurringUpdateSchema = recurringSchema.extend({

@@ -4,7 +4,6 @@
  */
 
 export const Sel = {
-  // Login page
   login: {
     email: '[data-testid="login-email"]',
     password: '[data-testid="login-password"]',
@@ -13,7 +12,6 @@ export const Sel = {
     form: '[data-testid="login-form"]',
   },
 
-  // Navigation
   nav: {
     container: '[data-testid="nav"]',
     dashboard: '[data-testid="nav-dashboard"]',
@@ -30,7 +28,6 @@ export const Sel = {
     activeLink: '[data-testid^="nav-"][aria-current="page"]',
   },
 
-  // Month Switcher (appears on multiple pages)
   monthSwitcher: {
     container: '[data-testid="month-switcher"]',
     label: '[data-testid="month-switcher-label"]',
@@ -39,7 +36,6 @@ export const Sel = {
     currentMonth: '[data-testid="month-switcher-current"]',
   },
 
-  // Dashboard
   dashboard: {
     container: '[data-testid="dashboard"]',
     summaryCards: '[data-testid="summary-card"]',
@@ -54,7 +50,6 @@ export const Sel = {
     addPersonBtn: '[data-testid="quick-add-person"]',
   },
 
-  // Known Expenses page
   known: {
     container: '[data-testid="known-expenses"]',
     addForm: '[data-testid="known-add-form"]',
@@ -63,7 +58,8 @@ export const Sel = {
     addAmount: '[data-testid="known-add-amount"]',
     addSubmit: '[data-testid="known-add-submit"]',
     addError: '[data-testid="known-add-error"]',
-    bucket: (name: string) => `[data-testid="known-bucket-${name.toLowerCase().replace(/\s+/g, '-')}"]`,
+    bucket: (name: string) =>
+      `[data-testid="known-bucket-${name.toLowerCase().replace(/\s+/g, '-')}"]`,
     bucketHeading: '[data-testid="known-bucket-heading"]',
     bucketTotal: '[data-testid="known-bucket-total"]',
     bucketItems: '[data-testid="known-bucket-items"]',
@@ -87,7 +83,6 @@ export const Sel = {
     },
   },
 
-  // Expenses page
   expenses: {
     container: '[data-testid="expenses"]',
     addForm: '[data-testid="expenses-add-form"]',
@@ -108,7 +103,6 @@ export const Sel = {
     filterSearch: '[data-testid="expenses-filter-search"]',
   },
 
-  // People page
   people: {
     container: '[data-testid="people"]',
     addForm: '[data-testid="people-add-form"]',
@@ -135,7 +129,6 @@ export const Sel = {
     },
   },
 
-  // Funds page
   funds: {
     container: '[data-testid="funds"]',
     addForm: '[data-testid="funds-add-form"]',
@@ -156,11 +149,11 @@ export const Sel = {
     total: '[data-testid="funds-total"]',
   },
 
-  // History page
   history: {
     container: '[data-testid="history"]',
     monthSelector: '[data-testid="history-month-selector"]',
-    monthOption: (year: number, month: number) => `[data-testid="history-month-${year}-${month}"]`,
+    monthOption: (year: number, month: number) =>
+      `[data-testid="history-month-${year}-${month}"]`,
     summary: '[data-testid="history-summary"]',
     income: '[data-testid="history-income"]',
     knownExpenses: '[data-testid="history-known-expenses"]',
@@ -171,13 +164,14 @@ export const Sel = {
     carryForward: '[data-testid="history-carry-forward"]',
   },
 
-  // Recurring page
   recurring: {
     container: '[data-testid="recurring"]',
     createForm: '[data-testid="recurring-create-form"]',
     createDescription: '[data-testid="recurring-create-description"]',
     createCategory: '[data-testid="recurring-create-category"]',
     createAmount: '[data-testid="recurring-create-amount"]',
+    createInterval: '[data-testid="recurring-create-interval"]',
+    createStart: '[data-testid="recurring-create-start"]',
     createSubmit: '[data-testid="recurring-create-submit"]',
     createError: '[data-testid="recurring-create-error"]',
     template: (id: string) => `[data-testid="recurring-template-${id}"]`,
@@ -188,14 +182,19 @@ export const Sel = {
     templateStatusBtn: '[data-testid="template-status-btn"]',
     templateEdit: '[data-testid="template-edit"]',
     templateDelete: '[data-testid="template-delete"]',
-    templateEditForm: '[data-testid="template-edit-form"]',
-    templateEditDescription: '[data-testid="template-edit-description"]',
-    templateEditAmount: '[data-testid="template-edit-amount"]',
-    templateEditSubmit: '[data-testid="template-edit-submit"]',
-    templateEditCancel: '[data-testid="template-edit-cancel"]',
+    templateCadence: '[data-testid="template-cadence"]',
+    templateNextDue: '[data-testid="template-next-due"]',
+    editForm: (id: string) => `[data-testid="recurring-edit-form-${id}"]`,
+    editDescription: (id: string) => `[data-testid="template-edit-description-${id}"]`,
+    editCategory: (id: string) => `[data-testid="template-edit-category-${id}"]`,
+    editAmount: (id: string) => `[data-testid="template-edit-amount-${id}"]`,
+    editInterval: (id: string) => `[data-testid="template-edit-interval-${id}"]`,
+    editStart: (id: string) => `[data-testid="template-edit-start-${id}"]`,
+    editSaveBtn: '[data-testid="template-edit-submit"]',
+    editCancelBtn: '[data-testid="template-edit-cancel"]',
+    deleteConfirm: '[data-testid="template-delete-confirm"]',
   },
 
-  // Categories page
   categories: {
     container: '[data-testid="categories"]',
     addGroupForm: '[data-testid="categories-add-group-form"]',
@@ -215,12 +214,15 @@ export const Sel = {
     groupEditKind: '[data-testid="group-edit-kind"]',
     groupEditSubmit: '[data-testid="group-edit-submit"]',
     groupEditCancel: '[data-testid="group-edit-cancel"]',
-    category: (groupId: string, catId: string) => `[data-testid="category-${groupId}-${catId}"]`,
+    category: (groupId: string, catId: string) =>
+      `[data-testid="category-${groupId}-${catId}"]`,
     categoryName: '[data-testid="category-name"]',
     categoryAddForm: (groupId: string) => `[data-testid="add-category-form-${groupId}"]`,
     addCategoryName: (groupId: string) => `[data-testid="add-category-name-${groupId}"]`,
-    addCategorySubmit: (groupId: string) => `[data-testid="add-category-submit-${groupId}"]`,
-    addCategoryError: (groupId: string) => `[data-testid="add-category-error-${groupId}"]`,
+    addCategorySubmit: (groupId: string) =>
+      `[data-testid="add-category-submit-${groupId}"]`,
+    addCategoryError: (groupId: string) =>
+      `[data-testid="add-category-error-${groupId}"]`,
     categoryEdit: '[data-testid="category-edit"]',
     categoryDelete: '[data-testid="category-delete"]',
     categoryMoveUp: '[data-testid="category-move-up"]',
@@ -233,7 +235,6 @@ export const Sel = {
     },
   },
 
-  // Common form elements
   form: {
     input: 'input',
     select: 'select',
@@ -244,7 +245,6 @@ export const Sel = {
     error: '[data-testid*="error"]',
   },
 
-  // Modals/Dialogs (if any)
   modal: {
     container: '[role="dialog"]',
     title: '[role="dialog"] h2',
@@ -253,7 +253,6 @@ export const Sel = {
     cancel: '[data-testid="modal-cancel"]',
   },
 
-  // Toast/Notifications
   toast: {
     container: '[data-testid="toast-container"]',
     message: '[data-testid="toast-message"]',
@@ -262,16 +261,10 @@ export const Sel = {
   },
 } as const;
 
-/**
- * Helper to create a selector for a dynamic item
- */
 export function itemSelector(base: string, id: string): string {
   return `[data-testid="${base}-${id}"]`;
 }
 
-/**
- * Helper to get all items matching a pattern
- */
 export function allItemsSelector(base: string): string {
   return `[data-testid^="${base}-"]`;
 }

@@ -1,4 +1,4 @@
-import { type Page, type Locator, expect } from '@playwright/test';
+import { type Locator, type Page, expect } from '@playwright/test';
 import { Sel } from '../helpers/selectors';
 import { formatINR } from '../helpers/test-data';
 
@@ -18,26 +18,77 @@ export class RecurringPage {
     await this.heading.waitFor({ state: 'visible' });
   }
 
-  async createTemplate(data: { description: string; category: string; amount: number }) {
+  async createTemplate(data: {
+    description: string;
+    category: string;
+    amount: number;
+    intervalMonths?: number;
+    startAt?: string;
+  }) {
     await this.createForm.locator(Sel.recurring.createDescription).fill(data.description);
-    await this.createForm.locator(Sel.recurring.createCategory).selectOption({ label: data.category });
+    await this.selectCategoryByText(
+      this.createForm.locator(Sel.recurring.createCategory),
+      data.category,
+    );
     await this.createForm.locator(Sel.recurring.createAmount).fill(String(data.amount));
+    if (data.intervalMonths !== undefined) {
+      await this.createForm
+        .locator(Sel.recurring.createInterval)
+        .selectOption(String(data.intervalMonths));
+    }
+    if (data.startAt !== undefined) {
+      await this.createForm.locator(Sel.recurring.createStart).fill(data.startAt);
+    }
     await this.createForm.locator(Sel.recurring.createSubmit).click();
     await expect(this.createForm.locator(Sel.recurring.createDescription)).toHaveValue('');
   }
 
-  async getTemplate(templateId: string) {
-    return new RecurringTemplateRow(this.page, templateId);
+  async getTemplate(templateSlug: string) {
+    const descriptionPattern = this.slugToText(templateSlug);
+    const row = this.page
+      .locator('[data-testid^="recurring-template-"]')
+      .filter({
+        has: this.page.locator(Sel.recurring.templateDescription, {
+          hasText: descriptionPattern,
+        }),
+      })
+      .first();
+
+    const testId = await row.getAttribute('data-testid');
+    if (!testId) {
+      throw new Error(`Could not find recurring template matching "${templateSlug}"`);
+    }
+
+    return new RecurringTemplateRow(
+      this.page,
+      testId.replace('recurring-template-', ''),
+    );
   }
 
   async expectTemplateCount(count: number) {
     const rows = this.page.locator('[data-testid^="recurring-template-"]');
     await expect(rows).toHaveCount(count);
   }
+
+  private async selectCategoryByText(select: Locator, text: string) {
+    const option = select.locator('option').filter({ hasText: text }).first();
+    const value = await option.getAttribute('value');
+    if (!value) throw new Error(`Could not find category option matching "${text}"`);
+    await select.selectOption(value);
+  }
+
+  private slugToText(slug: string): RegExp {
+    const words = slug
+      .split('-')
+      .filter(Boolean)
+      .map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    return new RegExp(words.join('.*'), 'i');
+  }
 }
 
 export class RecurringTemplateRow {
   readonly page: Page;
+  readonly templateId: string;
   readonly container: Locator;
   readonly description: Locator;
   readonly category: Locator;
@@ -48,20 +99,28 @@ export class RecurringTemplateRow {
 
   constructor(page: Page, templateId: string) {
     this.page = page;
-    this.container = page.locator(Sel.recurring.templateRow(templateId));
-    this.description = this.container.locator(Sel.recurring.templateDescription(templateId));
-    this.category = this.container.locator(Sel.recurring.templateCategory(templateId));
-    this.amount = this.container.locator(Sel.recurring.templateAmount(templateId));
-    this.statusBtn = this.container.locator(Sel.recurring.templateStatus(templateId));
-    this.editBtn = this.container.locator(Sel.recurring.templateEditBtn(templateId));
-    this.deleteBtn = this.container.locator(Sel.recurring.templateDeleteBtn(templateId));
+    this.templateId = templateId;
+    this.container = page.locator(Sel.recurring.template(templateId));
+    this.description = this.container.locator(Sel.recurring.templateDescription);
+    this.category = this.container.locator(Sel.recurring.templateCategory);
+    this.amount = this.container.locator(Sel.recurring.templateAmount);
+    this.statusBtn = this.container.locator(Sel.recurring.templateStatusBtn);
+    this.editBtn = this.container.locator(Sel.recurring.templateEdit);
+    this.deleteBtn = this.container.locator(Sel.recurring.templateDelete);
   }
 
-  async expectValues(description: string, category: string, amountPaise: number, isActive: boolean) {
+  async expectValues(
+    description: string,
+    category: string,
+    amountPaise: number,
+    isActive: boolean,
+  ) {
     await expect(this.description).toContainText(description);
     await expect(this.category).toContainText(category);
     await expect(this.amount).toContainText(formatINR(amountPaise));
-    await expect(this.statusBtn).toContainText(isActive ? 'Active' : 'Paused');
+    await expect(this.container.locator(Sel.recurring.templateStatus)).toContainText(
+      isActive ? 'Active' : 'Paused',
+    );
   }
 
   async toggleStatus() {
@@ -71,32 +130,57 @@ export class RecurringTemplateRow {
 
   async clickEdit() {
     await this.editBtn.click();
-    await this.container.locator(Sel.recurring.editForm(this.container.getAttribute('data-testid')?.replace('recurring-template-', '') ?? '')).waitFor({ state: 'visible' });
+    await this.container
+      .locator(Sel.recurring.editForm(this.templateId))
+      .waitFor({ state: 'visible' });
   }
 
-  async edit(data: { description?: string; category?: string; amount?: number }) {
-    const editForm = this.container.locator('[data-testid^="recurring-edit-form-"]');
+  async edit(data: {
+    description?: string;
+    category?: string;
+    amount?: number;
+    intervalMonths?: number;
+    startAt?: string;
+  }) {
+    const editForm = this.container.locator(Sel.recurring.editForm(this.templateId));
     if (data.description !== undefined) {
-      await editForm.locator(Sel.recurring.editDescription(this.container.getAttribute('data-testid')?.replace('recurring-template-', '') ?? '')).fill(data.description);
+      await editForm
+        .locator(Sel.recurring.editDescription(this.templateId))
+        .fill(data.description);
     }
     if (data.category !== undefined) {
-      await editForm.locator(Sel.recurring.editCategory(this.container.getAttribute('data-testid')?.replace('recurring-template-', '') ?? '')).selectOption({ label: data.category });
+      const select = editForm.locator(Sel.recurring.editCategory(this.templateId));
+      const option = select.locator('option').filter({ hasText: data.category }).first();
+      const value = await option.getAttribute('value');
+      if (!value) throw new Error(`Could not find category option matching "${data.category}"`);
+      await select.selectOption(value);
     }
     if (data.amount !== undefined) {
-      await editForm.locator(Sel.recurring.editAmount(this.container.getAttribute('data-testid')?.replace('recurring-template-', '') ?? '')).fill(String(data.amount));
+      await editForm
+        .locator(Sel.recurring.editAmount(this.templateId))
+        .fill(String(data.amount));
     }
-    await editForm.locator(Sel.recurring.editSaveBtn(this.container.getAttribute('data-testid')?.replace('recurring-template-', '') ?? '')).click();
+    if (data.intervalMonths !== undefined) {
+      await editForm
+        .locator(Sel.recurring.editInterval(this.templateId))
+        .selectOption(String(data.intervalMonths));
+    }
+    if (data.startAt !== undefined) {
+      await editForm.locator(Sel.recurring.editStart(this.templateId)).fill(data.startAt);
+    }
+    await editForm.locator(Sel.recurring.editSaveBtn).click();
     await expect(editForm).not.toBeVisible();
   }
 
   async cancelEdit() {
-    const editForm = this.container.locator('[data-testid^="recurring-edit-form-"]');
-    await editForm.locator(Sel.recurring.editCancelBtn(this.container.getAttribute('data-testid')?.replace('recurring-template-', '') ?? '')).click();
+    const editForm = this.container.locator(Sel.recurring.editForm(this.templateId));
+    await editForm.locator(Sel.recurring.editCancelBtn).click();
     await expect(editForm).not.toBeVisible();
   }
 
   async clickDelete() {
     await this.deleteBtn.click();
+    await this.container.locator(Sel.recurring.deleteConfirm).click();
     await this.page.waitForLoadState('networkidle');
   }
 }

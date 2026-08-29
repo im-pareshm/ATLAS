@@ -4,14 +4,14 @@ import { execSync } from 'child_process';
 /**
  * Database fixtures for test isolation
  */
-interface DbFixtures {
+interface DbWorkerFixtures {
   // Fixture to reset database before test suite
   resetDatabase: void;
   // Fixture to seed test data
   seedTestData: void;
 }
 
-export const test = base.extend<DbFixtures>({
+export const test = base.extend<Record<string, never>, DbWorkerFixtures>({
   // Reset database - runs once per worker
   resetDatabase: [async ({}, use, testInfo) => {
     if (testInfo.workerIndex === 0) {

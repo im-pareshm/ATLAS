@@ -3,13 +3,11 @@
  * Centralized test data for consistent, maintainable tests.
  */
 
-// Test user credentials
 export const TEST_USER = {
   email: "test@atlas.local",
   password: "atlas-dev-1234",
 } as const;
 
-// Default category groups (matching seed data)
 export const DEFAULT_GROUPS = [
   { name: "Income", kind: "INCOME" as const },
   { name: "EMI & loans", kind: "KNOWN_EXPENSE" as const },
@@ -21,7 +19,6 @@ export const DEFAULT_GROUPS = [
   { name: "Miscellaneous", kind: "DISCRETIONARY" as const },
 ] as const;
 
-// Default categories per group
 export const DEFAULT_CATEGORIES = {
   Income: ["Salary", "Freelance", "Interest", "Other Income"],
   "EMI & loans": ["Loan EMI", "Credit Card EMI", "Other EMI"],
@@ -68,27 +65,16 @@ export const DEFAULT_CATEGORIES = {
   Miscellaneous: ["Gifts", "Donations", "Repairs", "Other"],
 } as const;
 
-// Currency helpers
 export const RUPEE_SYMBOL = "\u20B9";
 
-/**
- * Convert rupees to paise (integer)
- */
 export function rupeesToPaise(rupees: number): number {
   return Math.round(rupees * 100);
 }
 
-/**
- * Convert paise to rupees (float)
- */
 export function paiseToRupees(paise: number): number {
   return paise / 100;
 }
 
-/**
- * Format paise as INR string with Indian digit grouping
- * e.g., 120000 -> "\u20B91,20,000"
- */
 export function formatINR(paise: number): string {
   const rupees = paiseToRupees(paise);
   const sign = rupees < 0 ? "-" : "";
@@ -100,9 +86,6 @@ export function formatINR(paise: number): string {
   return `${sign}${RUPEE_SYMBOL}${formatted}`;
 }
 
-/**
- * Format paise as INR without symbol
- */
 export function formatINRPlain(paise: number): string {
   const rupees = paiseToRupees(paise);
   const sign = rupees < 0 ? "-" : "";
@@ -113,9 +96,6 @@ export function formatINRPlain(paise: number): string {
   })}`;
 }
 
-/**
- * Create group data for tests
- */
 export function createGroupData(
   overrides: Partial<{
     name: string;
@@ -128,9 +108,6 @@ export function createGroupData(
   };
 }
 
-/**
- * Create category data for tests
- */
 export function createCategoryData(
   overrides: Partial<{
     name: string;
@@ -143,16 +120,13 @@ export function createCategoryData(
   };
 }
 
-/**
- * Create recurring template data for tests
- */
 export function createRecurringData(
   overrides: Partial<{
     description: string;
     category: string;
     amount: number;
-    frequency: "MONTHLY" | "WEEKLY" | "YEARLY";
-    dayOfMonth: number;
+    intervalMonths: number;
+    startAt: string;
     isActive: boolean;
   }> = {},
 ) {
@@ -160,15 +134,12 @@ export function createRecurringData(
     description: overrides.description ?? `Test Recurring ${Date.now()}`,
     category: overrides.category ?? "Streaming",
     amount: overrides.amount ?? 500,
-    frequency: overrides.frequency ?? "MONTHLY",
-    dayOfMonth: overrides.dayOfMonth ?? 1,
+    intervalMonths: overrides.intervalMonths ?? 1,
+    startAt: overrides.startAt ?? getCurrentMonth(),
     isActive: overrides.isActive ?? true,
   };
 }
 
-/**
- * Create known expense data for tests
- */
 export function createKnownExpenseData(
   overrides: Partial<{
     description: string;
@@ -185,9 +156,6 @@ export function createKnownExpenseData(
   };
 }
 
-/**
- * Create discretionary expense data for tests
- */
 export function createExpenseData(
   overrides: Partial<{
     description: string;
@@ -209,9 +177,6 @@ export function createExpenseData(
   };
 }
 
-/**
- * Create person data for tests
- */
 export function createPersonData(
   overrides: Partial<{
     name: string;
@@ -222,9 +187,6 @@ export function createPersonData(
   };
 }
 
-/**
- * Create ledger entry data for tests
- */
 export function createLedgerEntryData(
   overrides: Partial<{
     description: string;
@@ -246,9 +208,6 @@ export function createLedgerEntryData(
   };
 }
 
-/**
- * Create fund data for tests
- */
 export function createFundData(
   overrides: Partial<{
     name: string;
@@ -261,16 +220,10 @@ export function createFundData(
   };
 }
 
-/**
- * Generate unique test identifier
- */
 export function uniqueId(prefix: string = "test"): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
-/**
- * Slugify a string for use in test IDs
- */
 export function slugify(str: string): string {
   return str
     .toLowerCase()
@@ -280,17 +233,11 @@ export function slugify(str: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
-/**
- * Get current month in YYYY-MM format
- */
 export function getCurrentMonth(): string {
   const now = new Date();
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 }
 
-/**
- * Get previous month in YYYY-MM format
- */
 export function getPreviousMonth(): string {
   const now = new Date();
   const year = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
@@ -298,9 +245,6 @@ export function getPreviousMonth(): string {
   return `${year}-${String(month).padStart(2, "0")}`;
 }
 
-/**
- * Get next month in YYYY-MM format
- */
 export function getNextMonth(): string {
   const now = new Date();
   const year = now.getMonth() === 11 ? now.getFullYear() + 1 : now.getFullYear();
@@ -308,9 +252,6 @@ export function getNextMonth(): string {
   return `${year}-${String(month).padStart(2, "0")}`;
 }
 
-/**
- * Wait for a condition with timeout
- */
 export async function waitFor(
   condition: () => Promise<boolean>,
   timeoutMs: number = 5000,
@@ -324,9 +265,6 @@ export async function waitFor(
   throw new Error(`Condition not met within ${timeoutMs}ms`);
 }
 
-/**
- * Retry a function with exponential backoff
- */
 export async function retry<T>(
   fn: () => Promise<T>,
   maxAttempts: number = 3,

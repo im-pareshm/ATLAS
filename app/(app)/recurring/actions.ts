@@ -2,9 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { requireUserId } from "@/lib/session";
 import { rupeesToPaise } from "@/lib/money";
 import { ensureRecurringTransactionsGenerated } from "@/lib/recurring";
+import { requireUserId } from "@/lib/session";
 import { recurringSchema, recurringUpdateSchema } from "@/lib/validations";
 
 export type ActionState = { error?: string; ok?: boolean };
@@ -19,6 +19,20 @@ function revalidateAll() {
   revalidatePath("/");
 }
 
+function parseStartMonthInput(value: FormDataEntryValue | null): {
+  startYear?: number;
+  startMonth?: number;
+} {
+  const raw = String(value ?? "").trim();
+  const match = /^(\d{4})-(\d{2})$/.exec(raw);
+  if (!match) return {};
+
+  return {
+    startYear: Number(match[1]),
+    startMonth: Number(match[2]),
+  };
+}
+
 async function assertCategory(userId: string, categoryId: string) {
   return prisma.category.findFirst({
     where: { id: categoryId, userId, group: { kind: { in: RECURRING_KINDS } } },
@@ -31,15 +45,21 @@ export async function createRecurring(
   formData: FormData,
 ): Promise<ActionState> {
   const userId = await requireUserId();
+  const start = parseStartMonthInput(formData.get("startAt"));
   const parsed = recurringSchema.safeParse({
     categoryId: formData.get("categoryId"),
     description: formData.get("description") || undefined,
     amount: formData.get("amount"),
+    intervalMonths: formData.get("intervalMonths"),
+    startYear: start.startYear,
+    startMonth: start.startMonth,
   });
   if (!parsed.success) return { error: parsed.error.issues[0].message };
 
   if (!(await assertCategory(userId, parsed.data.categoryId))) {
-    return { error: "Pick a valid category (known expense, savings, or discretionary)." };
+    return {
+      error: "Pick a valid category (known expense, savings, or discretionary).",
+    };
   }
 
   await prisma.recurringTransaction.create({
@@ -48,7 +68,9 @@ export async function createRecurring(
       categoryId: parsed.data.categoryId,
       description: parsed.data.description ?? null,
       amount: rupeesToPaise(parsed.data.amount),
-      frequency: "MONTHLY",
+      intervalMonths: parsed.data.intervalMonths,
+      startYear: parsed.data.startYear,
+      startMonth: parsed.data.startMonth,
       isActive: true,
     },
   });
@@ -63,11 +85,15 @@ export async function updateRecurring(
   formData: FormData,
 ): Promise<ActionState> {
   const userId = await requireUserId();
+  const start = parseStartMonthInput(formData.get("startAt"));
   const parsed = recurringUpdateSchema.safeParse({
     id: formData.get("id"),
     categoryId: formData.get("categoryId"),
     description: formData.get("description") || undefined,
     amount: formData.get("amount"),
+    intervalMonths: formData.get("intervalMonths"),
+    startYear: start.startYear,
+    startMonth: start.startMonth,
   });
   if (!parsed.success) return { error: parsed.error.issues[0].message };
 
@@ -86,8 +112,12 @@ export async function updateRecurring(
       categoryId: parsed.data.categoryId,
       description: parsed.data.description ?? null,
       amount: rupeesToPaise(parsed.data.amount),
+      intervalMonths: parsed.data.intervalMonths,
+      startYear: parsed.data.startYear,
+      startMonth: parsed.data.startMonth,
     },
   });
+
   revalidateAll();
   return { ok: true };
 }
@@ -100,10 +130,12 @@ export async function toggleRecurring(formData: FormData): Promise<void> {
     select: { id: true, isActive: true },
   });
   if (!t) return;
+
   await prisma.recurringTransaction.update({
     where: { id },
     data: { isActive: !t.isActive },
   });
+
   if (!t.isActive) await ensureRecurringTransactionsGenerated(userId);
   revalidateAll();
 }

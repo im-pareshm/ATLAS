@@ -25,6 +25,7 @@ export default function LoginPage() {
             alt="ATLAS"
             width={34}
             height={34}
+            loading="eager"
             className="h-[34px] w-[34px] rounded-[10px] object-cover shadow-[0_8px_20px_-8px_#4f7c6baa]"
           />
           <span className="text-[22px] font-extrabold tracking-[-.02em]">
@@ -45,30 +46,38 @@ export default function LoginPage() {
           data-testid="login-form"
           className="rounded-[18px] bg-card p-[26px_24px] text-left shadow-login"
         >
-          <label className="mb-[6px] block text-[12.5px] font-semibold text-secondary">
+          <label
+            htmlFor="login-email"
+            className="mb-[6px] block text-[12.5px] font-semibold text-secondary"
+          >
             Email
           </label>
           <input
+            id="login-email"
             data-testid="login-email"
             name="email"
             type="email"
             autoComplete="username"
             required
             defaultValue=""
-            className="mb-[15px] w-full rounded-[11px] border border-inputborder bg-inputbg p-[12px_13px] text-[15px] outline-none"
+            className="atlas-focus-ring atlas-input mb-[15px] w-full rounded-[11px] border border-inputborder bg-inputbg p-[12px_13px] text-[15px] outline-none"
           />
 
-          <label className="mb-[6px] block text-[12.5px] font-semibold text-secondary">
+          <label
+            htmlFor="login-password"
+            className="mb-[6px] block text-[12.5px] font-semibold text-secondary"
+          >
             Password
           </label>
           <input
+            id="login-password"
             data-testid="login-password"
             name="password"
             type="password"
             autoComplete="current-password"
             required
             placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022"
-            className="mb-[20px] w-full rounded-[11px] border border-inputborder bg-inputbg p-[12px_13px] text-[15px] outline-none placeholder:text-faint2"
+            className="atlas-focus-ring atlas-input mb-[20px] w-full rounded-[11px] border border-inputborder bg-inputbg p-[12px_13px] text-[15px] outline-none placeholder:text-faint2"
           />
 
           {state.error ? (
@@ -84,7 +93,7 @@ export default function LoginPage() {
             data-testid="login-submit"
             type="submit"
             disabled={pending}
-            className="w-full rounded-[11px] bg-teal p-[13px] text-[15px] font-bold text-white shadow-[0_8px_18px_-8px_#4f7c6bcc] transition-colors hover:bg-teal-hover disabled:opacity-60"
+            className="atlas-focus-ring atlas-touch w-full rounded-[11px] bg-teal p-[13px] text-[15px] font-bold text-white shadow-[0_8px_18px_-8px_#4f7c6bcc] transition-colors hover:bg-teal-hover disabled:opacity-60"
           >
             {pending ? "Signing in..." : "Sign in"}
           </button>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useRef } from "react";
+import { useActionState, useEffect, useId, useRef } from "react";
 import { formatINR } from "@/lib/money";
 import type { LedgerDirection } from "@/lib/constants";
 import {
@@ -22,36 +22,37 @@ export type EntryDTO = {
 export type PersonDTO = {
   id: string;
   name: string;
-  netPaise: number; // given − received (non-pending); >0 = they owe you
+  netPaise: number;
   hasEntries: boolean;
   entries: EntryDTO[];
 };
 
 const inputCls =
-  "rounded-[10px] border border-inputborder bg-inputbg px-3 py-2 text-[13px] outline-none";
+  "atlas-focus-ring atlas-input rounded-[10px] border border-inputborder bg-inputbg px-3 py-2 text-[13px] outline-none";
 const ghostBtn =
-  "rounded-[7px] px-2 py-1 text-[12px] text-secondary transition-colors hover:bg-divider";
+  "atlas-focus-ring atlas-touch rounded-[10px] px-3 text-[12px] font-semibold text-secondary transition-colors hover:bg-divider hover:text-strong";
 
 function NetPill({ person }: { person: PersonDTO }) {
   let label: string;
-  let color = "#4f7c6b";
-  let bg = "#e4efe9";
+  let color = "var(--color-teal)";
+  let bg = "var(--color-mint-tint)";
   if (!person.hasEntries) {
     label = "no entries";
-    color = "#a7b0ac";
-    bg = "#eef2f0";
+    color = "var(--color-faint2)";
+    bg = "var(--color-divider)";
   } else if (person.netPaise === 0) {
     label = "settled";
   } else if (person.netPaise > 0) {
     label = `owes you ${formatINR(person.netPaise)}`;
   } else {
     label = `you owe ${formatINR(-person.netPaise)}`;
-    color = "#b07a68";
-    bg = "#f3e7e1";
+    color = "var(--color-clay)";
+    bg = "var(--color-clay-tint)";
   }
+
   return (
     <span
-      className="num rounded-full px-[9px] py-[3px] text-[12px] font-bold"
+      className="num inline-flex min-h-[32px] items-center rounded-full px-[10px] py-[4px] text-[12px] font-bold"
       style={{ color, background: bg }}
     >
       {label}
@@ -61,100 +62,132 @@ function NetPill({ person }: { person: PersonDTO }) {
 
 function EntryRow({ entry }: { entry: EntryDTO }) {
   const given = entry.direction === "GIVEN";
-  const color = given ? "#b07a68" : "#4f7c6b";
-  const tint = given ? "#f3e7e1" : "#e4efe9";
+  const color = given ? "var(--color-clay)" : "var(--color-teal)";
+  const tint = given ? "var(--color-clay-tint)" : "var(--color-mint-tint)";
+
   return (
-    <div className="flex items-center gap-[10px] border-t border-divider py-[7px]">
+    <div className="flex flex-wrap items-center gap-2 border-t border-divider py-[10px] sm:flex-nowrap sm:gap-3">
       <span
-        className="flex h-[22px] w-[22px] flex-none items-center justify-center rounded-[7px] text-[13px]"
+        className="flex h-[28px] w-[28px] flex-none items-center justify-center rounded-[8px] text-[13px]"
         style={{ color, background: tint }}
         title={given ? "Given" : "Received"}
+        aria-hidden="true"
       >
         {given ? "↑" : "↓"}
       </span>
-      <span className="min-w-0 flex-1 truncate text-[13px]">
-        {entry.description || (
-          <span className="text-faint">{given ? "Given" : "Received"}</span>
-        )}
+      <div className="min-w-0 flex-1">
+        <div className="truncate text-[13px]">
+          {entry.description || (
+            <span className="text-faint">{given ? "Given" : "Received"}</span>
+          )}
+        </div>
         {entry.pending ? (
-          <span className="ml-2 text-[11px] font-semibold text-clay">pending</span>
+          <div className="mt-1 text-[11px] font-semibold text-clay">Pending</div>
         ) : null}
-      </span>
-      {entry.pending ? (
-        <form action={markReceived}>
+      </div>
+      <div className="ml-auto flex w-full items-center justify-end gap-2 sm:w-auto">
+        {entry.pending ? (
+          <form action={markReceived}>
+            <input type="hidden" name="id" value={entry.id} />
+            <button
+              type="submit"
+              className="atlas-focus-ring atlas-touch rounded-full bg-divider px-[10px] text-[11px] font-bold text-teal transition-colors hover:bg-mint-tint"
+            >
+              Mark received
+            </button>
+          </form>
+        ) : null}
+        <span className="num text-[12.5px] font-bold" style={{ color }}>
+          {formatINR(entry.amountPaise)}
+        </span>
+        <form action={deleteEntry}>
           <input type="hidden" name="id" value={entry.id} />
           <button
             type="submit"
-            className="rounded-full bg-divider px-[9px] py-[4px] text-[11px] font-bold text-teal"
+            aria-label={`Delete ${entry.description || (given ? "given" : "received")} entry`}
+            title="Delete entry"
+            className="atlas-focus-ring atlas-icon-button text-[12px] text-icondim transition-colors hover:bg-clay-tint hover:text-clay"
           >
-            Mark received
+            ×
           </button>
         </form>
-      ) : null}
-      <span className="num text-[12.5px] font-bold" style={{ color }}>
-        {formatINR(entry.amountPaise)}
-      </span>
-      <form action={deleteEntry}>
-        <input type="hidden" name="id" value={entry.id} />
-        <button
-          type="submit"
-          title="Delete entry"
-          className="rounded-[6px] px-1.5 py-1 text-[12px] text-icondim transition-colors hover:bg-clay-tint hover:text-clay"
-        >
-          ✕
-        </button>
-      </form>
+      </div>
     </div>
   );
 }
 
-function AddEntryForm({ personId }: { personId: string }) {
+function AddEntryForm({ personId, personName }: { personId: string; personName: string }) {
   const [state, action, pending] = useActionState<ActionState, FormData>(
     addEntry,
     {},
   );
   const formRef = useRef<HTMLFormElement>(null);
+  const directionId = useId();
+  const descriptionId = useId();
+  const amountId = useId();
+  const pendingId = useId();
+
   useEffect(() => {
     if (state.ok) formRef.current?.reset();
   }, [state.ok]);
 
   return (
-    <form ref={formRef} action={action} className="mt-3 border-t border-divider pt-3">
+    <form ref={formRef} action={action} className="mt-4 border-t border-divider pt-4">
       <input type="hidden" name="personId" value={personId} />
-      <div className="flex flex-wrap items-center gap-2">
-        <select name="direction" defaultValue="GIVEN" className={inputCls}>
-          <option value="GIVEN">Given</option>
-          <option value="RECEIVED">Received</option>
-        </select>
-        <input
-          name="description"
-          placeholder="What for?"
-          className={`${inputCls} w-full sm:w-auto sm:min-w-0 sm:flex-1`}
-        />
-        <div className="flex items-center rounded-[10px] border border-inputborder bg-inputbg px-[8px]">
-          <span className="text-[12px] text-faint2">₹</span>
+      <div className="grid gap-3 md:grid-cols-[140px_minmax(0,1fr)_120px_auto_auto] md:items-end">
+        <div className="min-w-0">
+          <label htmlFor={directionId} className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.08em] text-faint2">
+            Direction
+          </label>
+          <select id={directionId} name="direction" defaultValue="GIVEN" className={`${inputCls} w-full`}>
+            <option value="GIVEN">Given</option>
+            <option value="RECEIVED">Received</option>
+          </select>
+        </div>
+        <div className="min-w-0">
+          <label htmlFor={descriptionId} className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.08em] text-faint2">
+            Description
+          </label>
           <input
-            name="amount"
-            type="number"
-            min="0"
-            step="1"
-            placeholder="0"
-            className="num w-[72px] border-none bg-transparent px-1 py-2 text-right text-[13px] font-semibold outline-none"
+            id={descriptionId}
+            name="description"
+            placeholder="What was this for?"
+            className={`${inputCls} w-full`}
           />
         </div>
-        <label className="flex items-center gap-1 text-[12px] text-muted">
-          <input type="checkbox" name="pending" /> pending
+        <div className="min-w-0">
+          <label htmlFor={amountId} className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.08em] text-faint2">
+            Amount
+          </label>
+          <div className="flex min-h-[44px] items-center rounded-[10px] border border-inputborder bg-inputbg px-[8px]">
+            <span className="text-[12px] text-faint2">₹</span>
+            <input
+              id={amountId}
+              name="amount"
+              type="number"
+              min="0"
+              step="1"
+              placeholder="0"
+              className="num w-full border-none bg-transparent px-1 py-2 text-right text-[13px] font-semibold outline-none"
+            />
+          </div>
+        </div>
+        <label htmlFor={pendingId} className="flex min-h-[44px] items-center gap-2 rounded-[10px] border border-inputborder px-3 text-[12px] font-medium text-secondary">
+          <input id={pendingId} type="checkbox" name="pending" />
+          Pending
         </label>
         <button
           type="submit"
           disabled={pending}
-          className={ghostBtn + " disabled:opacity-60"}
+          className={`${ghostBtn} disabled:opacity-60`}
         >
-          + Add
+          Add entry
         </button>
       </div>
       {state.error ? (
-        <p className="mt-2 text-[12px] text-clay">{state.error}</p>
+        <p className="mt-2 text-[12px] text-clay">
+          {state.error} for {personName}.
+        </p>
       ) : null}
     </form>
   );
@@ -166,22 +199,34 @@ function AddPersonForm() {
     {},
   );
   const formRef = useRef<HTMLFormElement>(null);
+  const nameId = useId();
+
   useEffect(() => {
     if (state.ok) formRef.current?.reset();
   }, [state.ok]);
 
   return (
-    <form ref={formRef} action={action} className="flex flex-wrap items-center gap-2">
-      <input name="name" placeholder="Add a person (e.g. Mummy)" className={inputCls} />
+    <form ref={formRef} action={action} className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+      <div className="min-w-0">
+        <label htmlFor={nameId} className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.08em] text-faint2">
+          Person
+        </label>
+        <input
+          id={nameId}
+          name="name"
+          placeholder="Add a person (e.g. Mummy)"
+          className={`${inputCls} w-full`}
+        />
+      </div>
       <button
         type="submit"
         disabled={pending}
-        className="rounded-[10px] bg-teal px-4 py-2 text-[13.5px] font-bold text-white transition-colors hover:bg-teal-hover disabled:opacity-60"
+        className="atlas-focus-ring atlas-touch rounded-[10px] bg-teal px-4 text-[13.5px] font-bold text-white transition-colors hover:bg-teal-hover disabled:opacity-60"
       >
         Add person
       </button>
       {state.error ? (
-        <span className="text-[12.5px] text-clay">{state.error}</span>
+        <span className="sm:col-span-2 text-[12.5px] text-clay">{state.error}</span>
       ) : null}
     </form>
   );
@@ -195,17 +240,18 @@ export default function PeopleManager({ people }: { people: PersonDTO[] }) {
       </div>
       {people.map((person) => (
         <div key={person.id} className="rounded-card bg-card p-[18px_20px] shadow-card">
-          <div className="mb-2 flex items-center gap-3">
+          <div className="mb-3 flex flex-wrap items-center gap-3">
             <span className="text-[14.5px] font-bold">{person.name}</span>
             <NetPill person={person} />
             <form action={deletePerson} className="ml-auto">
               <input type="hidden" name="id" value={person.id} />
               <button
                 type="submit"
+                aria-label={`Delete ${person.name}`}
                 title="Delete person"
-                className="rounded-[7px] px-2 py-1 text-[12px] text-icondim transition-colors hover:bg-clay-tint hover:text-clay"
+                className="atlas-focus-ring atlas-icon-button text-[12px] text-icondim transition-colors hover:bg-clay-tint hover:text-clay"
               >
-                ✕
+                ×
               </button>
             </form>
           </div>
@@ -214,7 +260,7 @@ export default function PeopleManager({ people }: { people: PersonDTO[] }) {
           ) : (
             person.entries.map((e) => <EntryRow key={e.id} entry={e} />)
           )}
-          <AddEntryForm personId={person.id} />
+          <AddEntryForm personId={person.id} personName={person.name} />
         </div>
       ))}
     </div>

@@ -45,6 +45,34 @@ test.describe('Recurring Templates', () => {
       await template.expectValues('Rent', 'Loan EMI', rupeesToPaise(15000), true);
     });
 
+    test('should create a 6-month recurring template', async () => {
+      const templateData = createRecurringData({
+        description: 'Policy Premium',
+        category: 'Insurance',
+        amount: 12000,
+        intervalMonths: 6,
+      });
+      await recurringPage.createTemplate(templateData);
+
+      const template = await recurringPage.getTemplate('policy-premium');
+      await template.expectValues('Policy Premium', 'Insurance', rupeesToPaise(12000), true);
+      await expect(template.container.locator(Sel.recurring.templateCadence)).toContainText('Every 6 months');
+    });
+
+    test('should create a yearly recurring template', async () => {
+      const templateData = createRecurringData({
+        description: 'Health Insurance',
+        category: 'Insurance',
+        amount: 18000,
+        intervalMonths: 12,
+      });
+      await recurringPage.createTemplate(templateData);
+
+      const template = await recurringPage.getTemplate('health-insurance');
+      await expect(template.container.locator(Sel.recurring.templateCadence)).toContainText('Every 12 months');
+      await expect(template.container.locator(Sel.recurring.templateNextDue)).toContainText(/\w{3} \d{4}/);
+    });
+
     test('should show error when required fields missing', async () => {
       const form = recurringPage.createForm;
       await form.locator(Sel.recurring.createAmount).fill('100');
@@ -101,6 +129,17 @@ test.describe('Recurring Templates', () => {
       await template.cancelEdit();
       await template.expectValues('Test', '', rupeesToPaise(100), true);
     });
+
+    test('should edit template interval and first due month', async () => {
+      await recurringPage.createTemplate(
+        createRecurringData({ description: 'Insurance Plan', category: 'Insurance', amount: 1000 }),
+      );
+      const template = await recurringPage.getTemplate('insurance-plan');
+
+      await template.clickEdit();
+      await template.edit({ intervalMonths: 6 });
+      await expect(template.container.locator(Sel.recurring.templateCadence)).toContainText('Every 6 months');
+    });
   });
 
   test.describe('Delete Template', () => {
@@ -120,7 +159,7 @@ test.describe('Recurring Templates', () => {
   });
 
   test.describe('Lazy Generation Integration', () => {
-    test('should generate known expense items for current month', async () => {
+    test('should generate known expense items for current month', async ({ authenticatedPage }) => {
       // Create recurring for known expense category
       await recurringPage.createTemplate(createRecurringData({ description: 'Monthly Rent', category: 'Loan EMI', amount: 10000 }));
 
@@ -137,11 +176,11 @@ test.describe('Recurring Templates', () => {
       await emiBucket.expectItemCount(1);
 
       const items = await emiBucket.container.locator('[data-testid^="item-"]').all();
-      const item = emiBucket.getItem((await items[0].getAttribute('data-testid'))!.replace('item-', ''));
+      const item = await emiBucket.getItem((await items[0].getAttribute('data-testid'))!.replace('item-', ''));
       await item.expectStatus('PENDING'); // Known expenses generated as PENDING
     });
 
-    test('should generate discretionary items as PAID', async () => {
+    test('should generate discretionary items as PAID', async ({ authenticatedPage }) => {
       await recurringPage.createTemplate(createRecurringData({ description: 'Monthly Sub', category: 'Streaming', amount: 500 }));
 
       const { NavComponent } = await import('./components/NavComponent');
@@ -167,7 +206,7 @@ test.describe('Recurring Templates', () => {
   });
 
   test.describe('Duplicate Prevention', () => {
-    test('should not create duplicate transactions on repeated page loads', async () => {
+    test('should not create duplicate transactions on repeated page loads', async ({ authenticatedPage }) => {
       await recurringPage.createTemplate(createRecurringData({ description: 'Test', category: 'Loan EMI', amount: 1000 }));
 
       // Navigate away and back multiple times

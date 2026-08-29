@@ -19,7 +19,7 @@ export default async function DashboardPage({
   const s = await computeMonthSummary(userId, ym);
 
   const outRow = (label: string, paise: number) => (
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between gap-3">
       <span className="text-[12.5px] text-muted">{label}</span>
       <span className="num text-[12.5px] font-semibold text-strong">
         {formatINR(paise)}
@@ -37,7 +37,7 @@ export default async function DashboardPage({
           <h1 className="text-[19px] font-extrabold tracking-[-.01em]">
             Your month, in one view
           </h1>
-          <p className="mt-1 text-[13px] text-secondary">
+          <p className="mt-1 max-w-[60ch] text-[13px] text-secondary">
             Money in minus everything paid out — the cash you actually have left.
           </p>
         </div>
@@ -53,11 +53,10 @@ export default async function DashboardPage({
           carryInPlusReceivedPaise={s.carryIn + s.received}
         />
 
-        {/* Money out */}
         <div className="rounded-card bg-card p-[18px_20px] shadow-card">
           <div className="mb-3 flex items-center gap-[9px]">
             <div className="flex h-[30px] w-[30px] items-center justify-center rounded-[9px] bg-clay-tint text-clay">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M12 5v14" />
                 <path d="M5 12l7 7 7-7" />
               </svg>
@@ -76,13 +75,15 @@ export default async function DashboardPage({
           </div>
         </div>
 
-        {/* Remaining cash (hero) */}
         <div
           className="flex flex-col justify-between rounded-card p-[20px_22px] text-white shadow-hero"
-          style={{ background: "linear-gradient(150deg,#4f7c6b 0%,#6f9686 100%)" }}
+          style={{
+            background:
+              "linear-gradient(150deg,var(--color-teal) 0%,var(--color-teal-hero) 100%)",
+          }}
         >
           <div className="flex items-center gap-[9px]">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <rect x="2" y="6" width="20" height="13" rx="2.5" />
               <path d="M16 12h.01" />
               <path d="M2 10h20" />
@@ -94,7 +95,7 @@ export default async function DashboardPage({
           <div>
             <div
               className="num my-[10px] text-[44px] font-extrabold leading-none tracking-[-.03em]"
-              style={{ color: negative ? "#e6b9ab" : "#c9eddc" }}
+              style={{ color: negative ? "var(--color-clay-neg)" : "var(--color-mint)" }}
             >
               {formatINR(s.remaining)}
             </div>
@@ -105,23 +106,22 @@ export default async function DashboardPage({
         </div>
       </div>
 
-      {/* quick links into the detailed screens */}
       <div className="mt-6 flex flex-wrap gap-3 text-[13px]">
         <Link
           href="/known"
-          className="rounded-card bg-card px-4 py-3 font-semibold text-secondary shadow-card transition-colors hover:text-teal"
+          className="atlas-focus-ring atlas-touch rounded-card bg-card px-4 py-3 font-semibold text-secondary shadow-card transition-colors hover:text-teal"
         >
           Known expenses →
         </Link>
         <Link
           href="/expenses"
-          className="rounded-card bg-card px-4 py-3 font-semibold text-secondary shadow-card transition-colors hover:text-teal"
+          className="atlas-focus-ring atlas-touch rounded-card bg-card px-4 py-3 font-semibold text-secondary shadow-card transition-colors hover:text-teal"
         >
           Other spending →
         </Link>
         <Link
           href="/recurring"
-          className="rounded-card bg-card px-4 py-3 font-semibold text-secondary shadow-card transition-colors hover:text-teal"
+          className="atlas-focus-ring atlas-touch rounded-card bg-card px-4 py-3 font-semibold text-secondary shadow-card transition-colors hover:text-teal"
         >
           Recurring →
         </Link>
