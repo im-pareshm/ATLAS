@@ -142,6 +142,20 @@ test.describe("Dashboard attention", () => {
     expect(safeToSpendSize).toBeGreaterThan(availableCashSize);
   });
 
+  test("saves income only after an explicit confirmation", async ({ page }) => {
+    const income = page.getByLabel("Income");
+    await income.fill("21000");
+    await page.getByLabel("Additional").focus();
+
+    await expect(page.getByTestId("dashboard-safe-to-spend")).toHaveText("₹13,500");
+    await expect(page.getByTestId("money-in-save-success")).toHaveCount(0);
+
+    await page.getByTestId("money-in-save").click();
+    await expect(page.getByTestId("money-in-save-success")).toHaveText("Saved");
+    await expect(page.getByTestId("dashboard-safe-to-spend")).toHaveText("₹14,500");
+    await expect(page.getByTestId("dashboard-available-cash")).toHaveText("₹17,500");
+  });
+
   test("surfaces attention data and keeps safe-to-spend stable when a bill is paid", async ({ page }) => {
     const bill = page.getByTestId("dashboard-planned-bill").filter({
       hasText: fixture?.billDescription,
@@ -151,6 +165,10 @@ test.describe("Dashboard attention", () => {
     await expect(page.getByTestId("dashboard-spending-cap")).toContainText("₹7,500 left");
     await expect(page.getByTestId("dashboard-people-summary")).toContainText("₹1,000 owed to you");
     await expect(page.getByTestId("dashboard-funds-summary")).toContainText("₹45,000");
+    await expect(page.getByTestId("dashboard-next-steps")).toContainText("Pay 1 planned bill");
+    await expect(page.getByTestId("dashboard-next-steps")).toContainText("Log an expense");
+    await expect(page.getByTestId("dashboard-next-steps")).toContainText("₹7,500 left in cap");
+    await expect(page.getByTestId("dashboard-next-steps")).not.toContainText("Recurring");
 
     await bill.getByTestId("dashboard-mark-bill-paid").click();
     await expect(bill).toHaveCount(0);

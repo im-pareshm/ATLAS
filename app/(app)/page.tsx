@@ -89,6 +89,15 @@ export default async function DashboardPage({
   const peopleBalance =
     (peopleGiven._sum.amount ?? 0) - (peopleReceived._sum.amount ?? 0);
   const fundTotal = funds._sum.balance ?? 0;
+  const plannedBillsAction =
+    pendingBillCount > 0
+      ? `Pay ${pendingBillCount} planned bill${pendingBillCount === 1 ? "" : "s"}`
+      : "Review planned bills";
+  const capAction = !hasCap
+    ? "Set a spending cap"
+    : capOverage > 0
+      ? `${formatINR(capOverage)} over cap`
+      : `${formatINR(s.cap - s.discretionary)} left in cap`;
 
   return (
     <div>
@@ -114,7 +123,7 @@ export default async function DashboardPage({
           carryInPlusReceivedPaise={s.carryIn + s.received}
         />
 
-        <div className="rounded-card bg-card p-[18px_20px] shadow-card">
+        <div data-testid="dashboard-money-out" className="rounded-card bg-card p-[18px_20px] shadow-card">
           <div className="mb-3 flex items-center gap-[9px]">
             <div className="flex h-[30px] w-[30px] items-center justify-center rounded-[9px] bg-clay-tint text-clay">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -137,6 +146,7 @@ export default async function DashboardPage({
         </div>
 
         <div
+          data-testid="dashboard-cash-position"
           className="flex flex-col justify-between rounded-card p-[20px_22px] text-white shadow-hero"
           style={{
             background:
@@ -319,26 +329,29 @@ export default async function DashboardPage({
         </div>
       </section>
 
-      <div className="mt-6 flex flex-wrap gap-3 text-[13px]">
-        <Link
-          href="/known"
-          className="atlas-focus-ring atlas-touch rounded-card bg-card px-4 py-3 font-semibold text-secondary shadow-card transition-colors hover:text-teal"
-        >
-          Known expenses →
-        </Link>
-        <Link
-          href="/expenses"
-          className="atlas-focus-ring atlas-touch rounded-card bg-card px-4 py-3 font-semibold text-secondary shadow-card transition-colors hover:text-teal"
-        >
-          Other spending →
-        </Link>
-        <Link
-          href="/recurring"
-          className="atlas-focus-ring atlas-touch rounded-card bg-card px-4 py-3 font-semibold text-secondary shadow-card transition-colors hover:text-teal"
-        >
-          Recurring →
-        </Link>
-      </div>
+      <section data-testid="dashboard-next-steps" className="mt-6" aria-labelledby="next-steps-heading">
+        <h2 id="next-steps-heading" className="sr-only">Next steps</h2>
+        <div className="flex flex-wrap gap-3 text-[13px]">
+          <Link
+            href={`/known?month=${toMonthParam(ym)}`}
+            className="atlas-focus-ring atlas-touch rounded-card bg-card px-4 py-3 font-semibold text-secondary shadow-card transition-colors hover:text-teal"
+          >
+            {plannedBillsAction} →
+          </Link>
+          <Link
+            href={`/expenses?month=${toMonthParam(ym)}`}
+            className="atlas-focus-ring atlas-touch rounded-card bg-card px-4 py-3 font-semibold text-secondary shadow-card transition-colors hover:text-teal"
+          >
+            Log an expense →
+          </Link>
+          <Link
+            href={`/expenses?month=${toMonthParam(ym)}`}
+            className="atlas-focus-ring atlas-touch rounded-card bg-card px-4 py-3 font-semibold text-secondary shadow-card transition-colors hover:text-teal"
+          >
+            {capAction} →
+          </Link>
+        </div>
+      </section>
     </div>
   );
 }

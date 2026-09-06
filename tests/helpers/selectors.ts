@@ -38,6 +38,9 @@ export const Sel = {
 
   dashboard: {
     container: '[data-testid="dashboard"]',
+    moneyIn: '[data-testid="dashboard-money-in"]',
+    moneyOut: '[data-testid="dashboard-money-out"]',
+    cashPosition: '[data-testid="dashboard-cash-position"]',
     attention: '[data-testid="dashboard-attention"]',
     safeToSpend: '[data-testid="dashboard-safe-to-spend"]',
     availableCash: '[data-testid="dashboard-available-cash"]',
@@ -48,6 +51,7 @@ export const Sel = {
     addExpense: '[data-testid="dashboard-add-expense"]',
     peopleSummary: '[data-testid="dashboard-people-summary"]',
     fundsSummary: '[data-testid="dashboard-funds-summary"]',
+    nextSteps: '[data-testid="dashboard-next-steps"]',
     summaryCards: '[data-testid="summary-card"]',
     incomeCard: '[data-testid="summary-income"]',
     knownExpensesCard: '[data-testid="summary-known-expenses"]',

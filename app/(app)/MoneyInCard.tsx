@@ -30,7 +30,6 @@ function RupeeInput({
           step="1"
           defaultValue={defaultValue || ""}
           placeholder="0"
-          onBlur={(e) => e.currentTarget.form?.requestSubmit()}
           className="num w-full min-w-[88px] border-none bg-transparent px-1 py-[6px] text-right text-[12.5px] font-semibold outline-none"
         />
       </div>
@@ -51,7 +50,7 @@ export default function MoneyInCard({
   additionalPaise: number;
   carryInPlusReceivedPaise: number;
 }) {
-  const [, action, pending] = useActionState<ActionState, FormData>(
+  const [state, action, pending] = useActionState<ActionState, FormData>(
     setMonthIncome,
     {},
   );
@@ -59,7 +58,7 @@ export default function MoneyInCard({
   const additionalId = useId();
 
   return (
-    <div className="rounded-card bg-card p-[18px_20px] shadow-card">
+    <div data-testid="dashboard-money-in" className="rounded-card bg-card p-[18px_20px] shadow-card">
       <div className="mb-3 flex items-center gap-[9px]">
         <div className="flex h-[30px] w-[30px] items-center justify-center rounded-[9px] bg-mint-tint text-teal">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -97,11 +96,24 @@ export default function MoneyInCard({
         </div>
         <button
           type="submit"
+          data-testid="money-in-save"
           disabled={pending}
           className="atlas-focus-ring atlas-touch mt-1 self-end rounded-[9px] bg-teal px-4 text-[12.5px] font-bold text-white transition-colors hover:bg-teal-hover disabled:opacity-60"
         >
           {pending ? "Saving..." : "Save"}
         </button>
+        <div aria-live="polite" className="min-h-[18px] text-right text-[11.5px]">
+          {state.ok ? (
+            <p data-testid="money-in-save-success" className="font-semibold text-teal">
+              Saved
+            </p>
+          ) : null}
+          {state.error ? (
+            <p data-testid="money-in-save-error" className="font-semibold text-clay">
+              {state.error}
+            </p>
+          ) : null}
+        </div>
       </form>
     </div>
   );
