@@ -40,6 +40,7 @@ export async function addFund(
     throw e;
   }
   revalidatePath("/funds");
+  revalidatePath("/");
   return { ok: true };
 }
 
@@ -58,6 +59,7 @@ export async function updateFundBalance(formData: FormData): Promise<void> {
       : 0;
   await prisma.fund.update({ where: { id }, data: { balance } });
   revalidatePath("/funds");
+  revalidatePath("/");
 }
 
 export async function deleteFund(formData: FormData): Promise<void> {
@@ -70,4 +72,5 @@ export async function deleteFund(formData: FormData): Promise<void> {
   if (!owned) return;
   await prisma.fund.delete({ where: { id } });
   revalidatePath("/funds");
+  revalidatePath("/");
 }

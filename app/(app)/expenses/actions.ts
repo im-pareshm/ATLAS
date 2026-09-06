@@ -51,6 +51,7 @@ export async function addDiscretionaryTxn(
   });
 
   revalidatePath("/expenses");
+  revalidatePath("/");
   return { ok: true };
 }
 
@@ -82,6 +83,7 @@ export async function setCap(
   }
 
   revalidatePath("/expenses");
+  revalidatePath("/");
   return { ok: true };
 }
 
@@ -99,5 +101,6 @@ export async function deleteTxn(
 
   await prisma.transaction.delete({ where: { id } });
   revalidatePath("/expenses");
+  revalidatePath("/");
   return { ok: true };
 }

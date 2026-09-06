@@ -38,6 +38,16 @@ export const Sel = {
 
   dashboard: {
     container: '[data-testid="dashboard"]',
+    attention: '[data-testid="dashboard-attention"]',
+    safeToSpend: '[data-testid="dashboard-safe-to-spend"]',
+    availableCash: '[data-testid="dashboard-available-cash"]',
+    plannedBills: '[data-testid="dashboard-planned-bills"]',
+    plannedBill: '[data-testid="dashboard-planned-bill"]',
+    markBillPaid: '[data-testid="dashboard-mark-bill-paid"]',
+    spendingCap: '[data-testid="dashboard-spending-cap"]',
+    addExpense: '[data-testid="dashboard-add-expense"]',
+    peopleSummary: '[data-testid="dashboard-people-summary"]',
+    fundsSummary: '[data-testid="dashboard-funds-summary"]',
     summaryCards: '[data-testid="summary-card"]',
     incomeCard: '[data-testid="summary-income"]',
     knownExpensesCard: '[data-testid="summary-known-expenses"]',

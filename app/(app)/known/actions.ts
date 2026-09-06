@@ -53,6 +53,7 @@ export async function addKnownItem(
   });
 
   revalidatePath("/known");
+  revalidatePath("/");
   return { ok: true };
 }
 
@@ -70,6 +71,7 @@ export async function setKnownStatus(formData: FormData): Promise<void> {
 
   await prisma.transaction.update({ where: { id }, data: { status } });
   revalidatePath("/known");
+  revalidatePath("/");
 }
 
 export async function deleteKnownItem(formData: FormData): Promise<void> {
@@ -82,4 +84,5 @@ export async function deleteKnownItem(formData: FormData): Promise<void> {
   if (!owned) return;
   await prisma.transaction.delete({ where: { id } });
   revalidatePath("/known");
+  revalidatePath("/");
 }
