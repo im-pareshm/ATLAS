@@ -60,7 +60,8 @@ export default function LoginPage() {
             autoComplete="username"
             required
             defaultValue=""
-            className="atlas-focus-ring atlas-input mb-[15px] w-full rounded-[11px] border border-inputborder bg-inputbg p-[12px_13px] text-[15px] outline-none"
+            placeholder="Enter email"
+            className="atlas-focus-ring atlas-input mb-[15px] w-full rounded-[11px] border border-inputborder bg-inputbg p-[12px_13px] text-[15px] outline-none placeholder:text-faint2"
           />
 
           <label
@@ -76,7 +77,7 @@ export default function LoginPage() {
             type="password"
             autoComplete="current-password"
             required
-            placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022"
+            placeholder="Enter Password"
             className="atlas-focus-ring atlas-input mb-[20px] w-full rounded-[11px] border border-inputborder bg-inputbg p-[12px_13px] text-[15px] outline-none placeholder:text-faint2"
           />
 

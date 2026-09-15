@@ -1,5 +1,6 @@
 import { test, expect } from './fixtures/auth';
 import { Sel } from './helpers/selectors';
+import { TEST_USER } from './helpers/test-data';
 
 test.describe('Accessibility', () => {
   test.describe('Keyboard Navigation', () => {
@@ -18,8 +19,8 @@ test.describe('Accessibility', () => {
 
     test('should submit login with Enter', async ({ page }) => {
       await page.goto('/login');
-      await page.fill(Sel.login.email, 'test@atlas.local');
-      await page.fill(Sel.login.password, 'atlas-dev-1234');
+      await page.fill(Sel.login.email, TEST_USER.email);
+      await page.fill(Sel.login.password, TEST_USER.password);
 
       await page.keyboard.press('Enter');
       await expect(page).toHaveURL('/');

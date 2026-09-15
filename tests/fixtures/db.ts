@@ -1,5 +1,6 @@
 import { test as base } from '@playwright/test';
 import { execSync } from 'child_process';
+import { TEST_USER } from '../helpers/test-data';
 
 /**
  * Database fixtures for test isolation
@@ -37,8 +38,8 @@ export const test = base.extend<Record<string, never>, DbWorkerFixtures>({
           stdio: 'inherit',
           env: {
             ...process.env,
-            ADMIN_EMAIL: 'test@atlas.local',
-            ADMIN_PASSWORD: 'atlas-dev-1234',
+            ADMIN_EMAIL: TEST_USER.email,
+            ADMIN_PASSWORD: TEST_USER.password,
           },
           timeout: 60000,
         });

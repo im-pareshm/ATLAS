@@ -3,9 +3,13 @@
  * Centralized test data for consistent, maintainable tests.
  */
 
+// The fixed e2e account. The suite seeds the DB with these and logs in with them;
+// .github/workflows/ci.yml mirrors the same two values for its seed step, so keep
+// them in sync. Deliberately public and obviously fake — never reuse for a real
+// deployment, and never point these at anything but a throwaway local DB.
 export const TEST_USER = {
   email: "test@atlas.local",
-  password: "atlas-dev-1234",
+  password: "e2e-only-not-a-real-password",
 } as const;
 
 export const DEFAULT_GROUPS = [

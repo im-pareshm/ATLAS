@@ -149,6 +149,10 @@ npm run db:seed
 Expected output: `✔ user: you@example.com` followed by the seeded groups. That email
 and password are what you'll log in with on the live site.
 
+**To change the password later**, repeat this Part with a new `ADMIN_PASSWORD` —
+re-running the seed against Turso rotates the existing account's password (there is
+no change-password screen in the app). Everything else the seed does is idempotent.
+
 > These `$env:` values only apply to this one PowerShell window and are **not**
 > saved — that's intentional. Your local `.env` (for local dev) is untouched.
 
@@ -239,6 +243,10 @@ Vercel automatically rebuilds and redeploys within a minute or two.
 - Keep your **Turso token** and **AUTH_SECRET** private — never commit them or share
   screenshots showing them. If a token leaks, revoke it in Turso and create a new one.
 - Use a **strong, unique password** for your ATLAS login (Part 5).
-- The password `atlas-dev-1234` in the local `.env` is for local development only and
-  has nothing to do with your live site.
-- Your GitHub repo should stay **private**.
+- The `ADMIN_PASSWORD` in your local `.env` is for local development only and has
+  nothing to do with your live site. The e2e test account in
+  `tests/helpers/test-data.ts` is public by design — never seed production with it.
+- The GitHub repo is **public** (portfolio). That's fine as long as: `.env` is never
+  committed (it's gitignored), the production password is unique to production, and
+  **secret scanning + push protection** are switched on in the repo's Settings →
+  Code security. Turn those on right after the first push.

@@ -8,11 +8,13 @@ export const MONTH_NAMES = [
   "July", "August", "September", "October", "November", "December",
 ];
 
+/** The current UTC year/month. */
 export function currentYearMonth(): YearMonth {
   const d = new Date();
   return { year: d.getUTCFullYear(), month: d.getUTCMonth() + 1 };
 }
 
+/** `ym` shifted by `n` months (negative goes backward). Handles year rollover. */
 export function addMonths(ym: YearMonth, n: number): YearMonth {
   const zeroBased = ym.month - 1 + n;
   const year = ym.year + Math.floor(zeroBased / 12);
@@ -20,6 +22,7 @@ export function addMonths(ym: YearMonth, n: number): YearMonth {
   return { year, month: month + 1 };
 }
 
+/** Whole months from `start` to `end` (negative if `end` is before `start`). */
 export function monthsBetween(start: YearMonth, end: YearMonth): number {
   return (end.year - start.year) * 12 + (end.month - start.month);
 }
@@ -29,6 +32,7 @@ export function compareYM(a: YearMonth, b: YearMonth): number {
   return a.year !== b.year ? a.year - b.year : a.month - b.month;
 }
 
+/** True if `a` and `b` are the same year/month. */
 export function equalsYM(a: YearMonth, b: YearMonth): boolean {
   return a.year === b.year && a.month === b.month;
 }
@@ -46,10 +50,29 @@ export function monthRange(ym: YearMonth): { start: Date; end: Date } {
   };
 }
 
+/**
+ * Whether a recurring template — first due in `start`, repeating every
+ * `intervalMonths` months — is due in `candidate`. True for `start` itself and
+ * every `intervalMonths`-th month after it; always false before `start`.
+ *
+ * Pulled out as pure month arithmetic (no Prisma) so it's unit-testable and
+ * reusable without importing lib/recurring.ts's DB-touching generator.
+ */
+export function isDueMonth(
+  start: YearMonth,
+  candidate: YearMonth,
+  intervalMonths: number,
+): boolean {
+  const delta = monthsBetween(start, candidate);
+  return delta >= 0 && delta % intervalMonths === 0;
+}
+
+/** "January 2026" style label. */
 export function formatMonth(ym: YearMonth): string {
   return `${MONTH_NAMES[ym.month - 1]} ${ym.year}`;
 }
 
+/** "Jan 2026" style label. */
 export function formatMonthShort(ym: YearMonth): string {
   return `${MONTH_NAMES[ym.month - 1].slice(0, 3)} ${ym.year}`;
 }

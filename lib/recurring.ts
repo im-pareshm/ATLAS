@@ -5,18 +5,9 @@ import {
   compareYM,
   currentYearMonth,
   firstOfMonth,
-  monthsBetween,
+  isDueMonth,
   type YearMonth,
 } from "@/lib/month";
-
-function isDueMonth(
-  start: YearMonth,
-  candidate: YearMonth,
-  intervalMonths: number,
-): boolean {
-  const delta = monthsBetween(start, candidate);
-  return delta >= 0 && delta % intervalMonths === 0;
-}
 
 /**
  * Lazy recurring generation. For each active template, generate the month's real
@@ -27,6 +18,9 @@ function isDueMonth(
  * and lastGeneratedYear/Month is the fast check so no writes happen once caught up.
  * Called from the authenticated layout (covers month rollover) and from the
  * recurring actions (so a newly created/activated template appears immediately).
+ *
+ * The due-month test itself (`isDueMonth`) is pure and lives in lib/month.ts —
+ * this function is the thin, DB-touching shell around it.
  */
 export async function ensureRecurringTransactionsGenerated(
   userId: string,

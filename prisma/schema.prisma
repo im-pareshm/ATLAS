@@ -162,7 +162,7 @@ model PersonLedgerEntry {
   direction   String // GIVEN | RECEIVED
   description String?
   pending     Boolean  @default(false) // pending settle-up; excluded from cash math until settled
-  linkedTxnId String? // optional: this entry is also a cash movement
+  linkedTxnId String? // UNUSED — nothing sets it; see KNOWN_ISSUES.md "linkedTxnId"
 
   createdAt DateTime @default(now())
 
