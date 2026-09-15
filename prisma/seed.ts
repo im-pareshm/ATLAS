@@ -55,10 +55,14 @@ async function main() {
     throw new Error("ADMIN_EMAIL and ADMIN_PASSWORD must be set to seed.");
   }
 
+  // ADMIN_PASSWORD is the source of truth for this account: re-running the seed
+  // with a new value rotates the password (there is no change-password screen, so
+  // this is the only way to). Never run this against production unless you mean
+  // to reset the live password to whatever ADMIN_PASSWORD currently holds.
   const passwordHash = await bcrypt.hash(password, 12);
   const user = await prisma.user.upsert({
     where: { email },
-    update: {},
+    update: { passwordHash },
     create: { email, passwordHash },
   });
   console.log(`✔ user: ${user.email}`);

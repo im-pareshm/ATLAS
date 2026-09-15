@@ -149,6 +149,10 @@ npm run db:seed
 Expected output: `✔ user: you@example.com` followed by the seeded groups. That email
 and password are what you'll log in with on the live site.
 
+**To change the password later**, repeat this Part with a new `ADMIN_PASSWORD` —
+re-running the seed against Turso rotates the existing account's password (there is
+no change-password screen in the app). Everything else the seed does is idempotent.
+
 > These `$env:` values only apply to this one PowerShell window and are **not**
 > saved — that's intentional. Your local `.env` (for local dev) is untouched.
 

@@ -52,9 +52,11 @@ is the remaining step (see [DEPLOYMENT.md](DEPLOYMENT.md)).
   prefer this pattern (a `components/` subfolder colocated with the route) over
   letting it keep growing.
 - Credentials never live in the repo. Local dev: `ADMIN_EMAIL`/`ADMIN_PASSWORD` in
-  the gitignored `.env`, consumed once by `npm run db:seed`. E2E/CI: the fixed,
+  the gitignored `.env`, consumed by `npm run db:seed`. E2E/CI: the fixed,
   obviously-fake account in `tests/helpers/test-data.ts`, mirrored in `ci.yml`.
   Production: set at seed time, must differ from both. The repo is public.
+  Re-running the seed with a new `ADMIN_PASSWORD` rotates the password — the only
+  way to, since there is no change-password screen.
 - **Line endings**: the repository is LF throughout (`git ls-files --eol` shows
   `i/lf` for every text file). On Windows `core.autocrlf=true` checks some files
   out as CRLF and normalizes them back on commit, so git's "LF will be replaced
