@@ -82,6 +82,31 @@ month's plan on last month's actuals.
 
 Don't duplicate the content of those docs here.
 
+## Docs are part of the change
+
+If your change makes any statement in a doc untrue, fix that doc **in the same
+commit**. Never leave a note saying a doc is outdated — fix the doc. Cheap
+self-check before you finish: grep the `*.md` files for the names you touched
+(function, route, npm script, env var, screen, category kind); if one appears,
+re-read that passage and decide whether it still holds.
+
+Which doc owns what:
+
+| If you change… | Update |
+|---|---|
+| Prisma schema, data model, money model | DESIGN.md (authoritative); the "Data Model" summary here |
+| The cash formula (`lib/cash-math.ts`) or recurring generation | "Key Architectural Decisions" here; UI_DESIGN_GUIDE.md §7; DESIGN.md §1; the header comment in `lib/cash-math.ts`; a case in `lib/__tests__/` |
+| A screen's behaviour or a user-facing workflow | DESIGN.md screen designs; USER_GUIDE.md |
+| Visual tokens, typography, number formatting | UI_DESIGN_GUIDE.md; the "UI / visual spec" summary here |
+| npm scripts, file layout, routes, auth wiring | "Commands" and "Key implementation facts" here |
+| Env vars or deploy steps | DEPLOYMENT.md; the `env:` block of the `e2e` job in `.github/workflows/ci.yml` |
+| Test setup or which suites exist | "Testing" and "CI" here; KNOWN_ISSUES.md if coverage is parked |
+| Feature scope (what's in v1, what's deferred) | PRD.md |
+| A fix you're parking (an exclusion, a `.skip`, a workaround) | KNOWN_ISSUES.md — its rules are in the file |
+
+README.md is still the `create-next-app` boilerplate — nothing owns it yet. Don't
+add setup steps there; they live in DEPLOYMENT.md until README is rewritten.
+
 ## Confirmed Tech Stack (from PRD.md §8)
 
 - **Next.js + TypeScript** — single app, frontend + API routes together.
