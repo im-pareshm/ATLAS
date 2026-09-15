@@ -97,3 +97,30 @@ each step leaving the suite runnable:
 not been touched since. Verified 2026-09-15 that `next build` fails with `tests/`
 included and that nothing in `tests/` or the dependency set differs from
 `master`, so `master`'s build has the same failure.
+
+---
+
+## `PersonLedgerEntry.linkedTxnId` is a dead column
+
+**Symptom.** `prisma/schema.prisma` has `linkedTxnId String?` on `PersonLedgerEntry`
+(comment: "this entry is also a cash movement"), but no action or form ever sets it.
+Every row is null.
+
+**Cause.** DESIGN.md originally let a ledger entry *optionally* double as a cash
+transaction. The integrated cash math (received = money in, given = money out —
+`lib/cash-math.ts`) made that redundant, the UI was never built, and the column
+shipped in the initial migration (`prisma/migrations/20260712145425_init`) and
+`prisma/turso-schema.sql`.
+
+**Workaround in place.** None needed — the column is nullable and ignored. Listed
+so the decision isn’t lost: DESIGN.md marks it `UNUSED` and points here.
+
+**Fix plan.** Decide one of:
+
+1. Drop it — a Prisma migration removing the column, the matching edit to
+   `prisma/turso-schema.sql`, and delete the line from DESIGN.md’s snippet.
+2. Build it — a "also a cash transaction" option on the entry form that creates a
+   linked `Transaction`. Only worth it if there is a real case the integrated math
+   doesn’t already cover.
+
+**Since.** Initial schema (2026-07-12).

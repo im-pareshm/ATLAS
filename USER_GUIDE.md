@@ -39,7 +39,8 @@ On top of that:
 - **Carry-forward**: whatever cash is left at the end of a month rolls into the next month automatically.
 - **Funds** (savings/investment balances) are tracked as a separate snapshot — they don't affect your monthly cash.
 
-The whole point is the single hero number on the dashboard: **Remaining cash**.
+The whole point is the dashboard's hero number: **Safe to spend** — the cash you have
+left after the planned bills you haven't paid yet.
 
 ---
 
@@ -57,6 +58,10 @@ Two things that are deliberately **not** in this formula:
 
 Also useful: **"still to pay"** = known expenses you've planned but not yet ticked off as paid.
 
+The dashboard's big number, **Safe to spend after planned bills**, is Remaining cash minus
+"still to pay" — what you can spend without touching money already earmarked for bills.
+**Available cash**, shown underneath it, is Remaining cash itself.
+
 > Only expenses you mark **paid** reduce your cash. A planned-but-unpaid bill shows up as "still to pay", not as money already gone.
 
 ---
@@ -65,30 +70,42 @@ Also useful: **"still to pay"** = known expenses you've planned but not yet tick
 
 ATLAS is single-user and private. Open the app and sign in with your email and password on the login screen. There's no public sign-up — your account is created once during setup.
 
-Use **Sign out** (top-right) when you're done on a shared device.
+Use **Sign out** (top-right) when you're done on a shared device. The theme button next to
+it switches between light and dark; by default ATLAS follows your device's setting.
 
 ---
 
 ## 4. The screens
 
-Navigation is the row of links under the ATLAS logo. Most screens have a **month switcher** (‹ July 2026 ›) — use it to move between months; everything on that screen updates to the month you're viewing.
+On a laptop, navigation is the row of links under the ATLAS logo. On a phone it's the bar
+along the bottom of the screen — **Home · Expenses · Known · People**, plus **More** for
+Funds, History, Recurring and Categories. Most screens have a **month switcher**
+(‹ July 2026 ›) — use it to move between months; everything on that screen updates to
+the month you're viewing.
 
 ### Dashboard
-Your month at a glance — three cards:
+Your month at a glance — three cards, then what needs attention.
 
-- **Money in** — shows your total money in. Type your **Income** and **Additional** (one-off/extra income) directly into the boxes; they save automatically when you click away. "Carry-in + received" (last month's leftover plus money received from people) is shown below and is calculated for you.
+- **Money in** — type your **Income** and **Additional** (one-off/extra income) into the boxes and click **Save**. "Carry-in + received" (last month's leftover plus money received from people) is calculated for you and shown below.
 - **Money out · paid** — total paid out, broken into Known expenses, Discretionary, and Given to people.
-- **Remaining cash** (the big teal card) — money in minus money out. It turns a warm clay colour if it ever goes negative. The pill shows **"₹… still to pay"** (planned known bills not yet paid).
+- **Monthly cash position** (the big teal card) — the hero number is **Safe to spend after planned bills**: money in minus money out, minus the planned bills you haven't paid yet. **Available cash** below it is plain money in minus money out (your Remaining cash). Either turns a warm clay colour if it goes negative.
 
-Quick links at the bottom jump you to the detailed screens.
+**This month needs attention** sits underneath:
+
+- **Planned bills** — your pending known expenses, each with a **Mark paid** button so you can tick them off without leaving the dashboard.
+- **Spending cap** — how you're tracking against the discretionary cap (**"₹… left"** or **"₹… over"**), or a prompt to set one.
+- **People** and **Savings & funds** tiles — the net balance across people ("owed to you" / "You owe" / "All settled") and your funds total, each linking to its screen.
+- **Add expense** jumps straight to logging a discretionary spend.
+
+Quick links at the bottom (pay planned bills, log an expense, set or check the cap) take you to the detailed screens.
 
 ### Known expenses
 Your plan-then-pay checklist, grouped into buckets (Savings, EMI & loans, Subscriptions, Miscellaneous, etc.). For each bucket you see how much is **paid of planned**, a progress bar, and its line items.
 
-- **Add a planned item**: type a description, pick a category, enter the amount, and **+ Add**. It starts as *pending* (planned, not yet paid).
+- **Add a planned item**: type a description, pick a category, enter the amount, and **Add item**. It starts as *pending* (planned, not yet paid).
 - **Mark it paid**: click the checkbox. The amount now counts toward "Money out" and your Remaining cash drops. Click again to mark it unpaid.
-- **Cancel / restore** (✕ / ↺): cancelling strikes an item through and removes it from the totals (use it for bills that got skipped this month). ↺ brings it back.
-- **Delete** (🗑): removes the item entirely.
+- **Skip / restore** (× / ↺): skipping strikes an item through and removes it from the totals (use it for bills that didn't happen this month). ↺ brings it back.
+- **Delete** (the second ×, tooltip "Delete"): removes the item entirely.
 
 Many of these items appear automatically each month from your **Recurring** templates.
 
@@ -121,11 +138,12 @@ Look back and spot trends.
 - Use the month switcher to change the anchor month.
 
 ### Recurring
-Set up bills that repeat every month so you don't re-enter them.
+Set up bills that repeat — monthly, or every 2, 3, 4, 6 or 12 months — so you don't re-enter them.
 
-- **Add a monthly template**: description, category, amount → **Add monthly**.
-- Each new month (the first time you open ATLAS that month), active templates automatically create their item — **known/savings** ones land on the **Known** checklist as *pending* to tick off.
-- **Active / Paused**: click the pill to pause a template without deleting it. **Edit** to change amount/category; **✕** to delete (already-generated items stay).
+- **Add a template**: description, category, amount, how often it **Repeats**, and its **First due month** → **Add recurring**.
+- Each new month (the first time you open ATLAS that month), active templates that are due create their item — **known/savings** ones land on the **Known** checklist as *pending* to tick off. Each template shows its interval and **Next due** month.
+- **Pause / Resume**: pause a template without deleting it — the **Active / Paused** badge shows its state. **Edit** changes any of its details, including the interval and first due month.
+- **Delete** is under the **⋯** menu on the row, with a confirmation step; already-generated items stay.
 - It's safe to open the app repeatedly — items are never duplicated.
 
 ### Categories
@@ -144,7 +162,7 @@ The building blocks everything else uses.
 ## 5. Typical monthly workflow
 
 **At the start of the month**
-1. On the **Dashboard**, enter your **Income** (and **Additional** if any).
+1. On the **Dashboard**, enter your **Income** (and **Additional** if any) and click **Save**.
 2. Open **Known** — your recurring bills are already there as pending. Add any one-off known bills for the month.
 3. On **Expenses**, set (or accept the suggested) **monthly cap** for casual spending.
 
@@ -152,10 +170,10 @@ The building blocks everything else uses.
 4. Pay a bill? Tick it off on **Known** (checkbox → paid).
 5. Buy something casual? Log it on **Expenses**.
 6. Gave money to / got money from someone? Record it on **People**.
-7. Glance at the **Dashboard** anytime to see **Remaining cash** and what's **still to pay**.
+7. Glance at the **Dashboard** anytime to see what's **safe to spend** and what's **still to pay** — pending bills can be marked paid right there.
 
 **End of month / review**
-8. Cancel (✕) any planned items you ended up skipping.
+8. Skip (×) any planned items that didn't happen this month.
 9. Update **Funds** balances if your savings/investments changed.
 10. Check **History** to see the trend. Whatever cash is left rolls into next month automatically as **Carry-in**.
 
