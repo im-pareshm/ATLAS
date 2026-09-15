@@ -37,8 +37,8 @@ Single user for v1, but accessed from multiple devices (laptop, phone) — so th
 - Entry method: **manual entry only for v1** (confirmed) — CSV import deferred to a future version.
 
 ### 5.1a Recurring Transactions
-- Define a recurring transaction template: amount, category, description, and frequency (v1 = monthly only, e.g. rent, subscriptions, salary, EMIs).
-- Each new month, active recurring templates automatically generate that month's item. Known/savings recurring items are generated as **pending** so they land on the plan-and-pay checklist (§5.3).
+- Define a recurring transaction template: amount, category, description, an interval (every 1, 2, 3, 4, 6 or 12 months) and a first due month — e.g. rent and EMIs monthly, an insurance premium yearly.
+- In each due month, active recurring templates automatically generate that month's item (missed due months are backfilled up to the current month). Known/savings recurring items are generated as **pending** so they land on the plan-and-pay checklist (§5.3).
 - Recurring templates can be edited or deactivated; generated items remain independently editable afterward.
 
 ### 5.2 Categories & Groups (2-level)

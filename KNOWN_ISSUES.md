@@ -31,7 +31,7 @@ rough size) · **Since** (commit/date, when known).
 
 **Symptom.** `tsc` over `tests/` reports 238 errors across 9 files. With `tests/`
 included in the build typecheck, `next build` fails at the first one
-(`tests/fixtures/db.ts:14`). Running the suite, the broken specs fail at runtime
+(`tests/fixtures/db.ts:15`). Running the suite, the broken specs fail at runtime
 with `page.setCap is not a function` and similar.
 
 **Cause.** The whole suite landed in one commit (`3123a3d`, 2026-08-05) with
@@ -47,7 +47,7 @@ three layers that were never reconciled:
    (`tests/categories.spec.ts:144` — `Property 'expectName' does not exist on
    type 'Promise<CategoryRow>'`), selector-map keys that don't exist
    (`Sel.expenses.addRowCategory` where `tests/helpers/selectors.ts` has
-   `addCategory`), and a fixture typing error at `tests/fixtures/db.ts:14`.
+   `addCategory`), and a fixture typing error at `tests/fixtures/db.ts:15`.
 2. *Page-object selectors don't exist in the DOM.* Six screens — expenses, known,
    people, funds, history, categories — have **zero** `data-testid` attributes,
    so even an internally consistent page object like `HistoryPage.ts` targets
@@ -81,7 +81,7 @@ never consults `include`/`exclude`, so the suite still runs. Consequences:
 **Fix plan.** A rewrite of six screens' test layer, not a patch. Suggested order,
 each step leaving the suite runnable:
 
-1. Fix `tests/fixtures/db.ts:14` (one typing error; every spec imports it) and
+1. Fix `tests/fixtures/db.ts:15` (one typing error; every spec imports it) and
    the four `auth.spec.ts` errors in place.
 2. Delete the six broken spec files and `tests/pages/CategoriesPage.ts` (only
    `categories.spec.ts` imports it). Get the remaining suites green in the CI

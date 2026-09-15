@@ -48,8 +48,9 @@ jobs:
       TURSO_DATABASE_URL: "file:./prisma/dev.db"
       TURSO_AUTH_TOKEN: ""
       AUTH_SECRET: "ci-only-not-a-real-secret-0000000000000000000000000000"
+      # Must match TEST_USER in tests/helpers/test-data.ts — the specs log in with these.
       ADMIN_EMAIL: "test@atlas.local"
-      ADMIN_PASSWORD: "atlas-dev-1234"
+      ADMIN_PASSWORD: "e2e-only-not-a-real-password"
     steps:
       - uses: actions/checkout@v4
 
