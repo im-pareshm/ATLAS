@@ -1,17 +1,17 @@
 name: CI
 
-# Fast path (every PR, and every push to master): install, lint, typecheck-via-
+# Fast path (every PR, and every push to main): install, lint, typecheck-via-
 # build, and the dependency-free Vitest unit suite (lib/__tests__/). This is the
 # required check.
 #
-# Slow path (pushes to master only): the full Playwright end-to-end suite against a
+# Slow path (pushes to main only): the full Playwright end-to-end suite against a
 # real dev server + seeded local SQLite DB. Kept off the PR fast path because
 # installing browsers and running ~10 spec files is a couple of minutes, not
 # seconds — see AGENTS.md "Testing" for why the two suites are split this way.
 
 on:
   push:
-    branches: [master]
+    branches: [main]
   pull_request:
 
 jobs:
@@ -39,7 +39,7 @@ jobs:
   e2e:
     name: Playwright end-to-end
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: build-lint-unit
     env:
       # A throwaway local file DB + non-secret values, scoped to this CI run only.

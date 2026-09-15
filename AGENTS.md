@@ -202,7 +202,7 @@ alone does not catch an arithmetic mistake.
 ## CI
 
 `.github/workflows/ci.yml` runs install → lint → build → `test:unit` on every PR
-and every push to `master`. The Playwright suite runs separately on pushes to
-`master` (browser install + a full run is slower and needs a seeded DB, so it's
+and every push to `main`. The Playwright suite runs separately on pushes to
+`main` (browser install + a full run is slower and needs a seeded DB, so it's
 not on the fast path for every commit). That `e2e` job fails until the Playwright
 suite is repaired — see KNOWN_ISSUES.md.

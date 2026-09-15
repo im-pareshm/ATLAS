@@ -71,12 +71,12 @@ Per file:
 (the project's typecheck) passes. Playwright transpiles the specs itself and
 never consults `include`/`exclude`, so the suite still runs. Consequences:
 
-- The CI `e2e` job in `.github/workflows/ci.yml` (master pushes only) fails at
+- The CI `e2e` job in `.github/workflows/ci.yml` (main pushes only) fails at
   runtime until this is fixed. The required `build-lint-unit` job is unaffected.
 - `lib/__tests__/` (Vitest) is deliberately *not* excluded; it typechecks clean
   and should stay in the build.
 - Do not remove `tests` from `exclude` as a tidy-up: the build will go red on
-  `master` again.
+  `main` again.
 
 **Fix plan.** A rewrite of six screens' test layer, not a patch. Suggested order,
 each step leaving the suite runnable:
@@ -96,7 +96,7 @@ each step leaving the suite runnable:
 **Since.** `3123a3d` (2026-08-05). The six screens' specs and page objects have
 not been touched since. Verified 2026-09-15 that `next build` fails with `tests/`
 included and that nothing in `tests/` or the dependency set differs from
-`master`, so `master`'s build has the same failure.
+`main`, so `main`'s build has the same failure.
 
 ---
 
