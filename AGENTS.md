@@ -95,8 +95,8 @@ Which doc owns what:
 | If you change… | Update |
 |---|---|
 | Prisma schema, data model, money model | DESIGN.md (authoritative); the "Data Model" summary here |
-| The cash formula (`lib/cash-math.ts`) or recurring generation | "Key Architectural Decisions" here; UI_DESIGN_GUIDE.md §7; DESIGN.md §1; the header comment in `lib/cash-math.ts`; a case in `lib/__tests__/` |
-| A screen's behaviour or a user-facing workflow | DESIGN.md screen designs; USER_GUIDE.md |
+| The cash formula (`lib/cash-math.ts`) or recurring generation | "Key Architectural Decisions" here; UI_DESIGN_GUIDE.md §7; DESIGN.md "Per-month math"; the header comment in `lib/cash-math.ts`; a case in `lib/__tests__/` |
+| A screen's behaviour, the app shell (nav, header, theme), or a user-facing workflow | DESIGN.md "Screens" / "Navigation & theme"; USER_GUIDE.md |
 | Visual tokens, typography, number formatting | UI_DESIGN_GUIDE.md; the "UI / visual spec" summary here |
 | npm scripts, file layout, routes, auth wiring | "Commands" and "Key implementation facts" here |
 | Env vars or deploy steps | DEPLOYMENT.md; the `env:` block of the `e2e` job in `.github/workflows/ci.yml` |

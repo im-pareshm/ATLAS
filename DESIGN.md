@@ -1,6 +1,6 @@
 # ATLAS — Model & UI/UX Design
 
-> Reconciles ATLAS with the user's real-world Notion expense-tracking workflow (a **plan-then-reconcile** system, not simple after-the-fact logging). This design supersedes the flat-model assumptions in the original [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) §2 and §9. Savings/investment snapshot remains a v2 non-goal.
+> Reconciles ATLAS with the user's real-world Notion expense-tracking workflow (a **plan-then-reconcile** system, not simple after-the-fact logging). This design supersedes the flat-model assumptions in the original [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) §2 and §9. A *lightweight* savings/funds snapshot is **in v1** (decision D2 in [UI_DESIGN_GUIDE.md](UI_DESIGN_GUIDE.md); the `Fund` model below); *full* investment tracking — returns, cost basis, price history — stays a v2 non-goal per [PRD.md](PRD.md).
 
 ## Confirmed workflow features (v1)
 Grouped categories (2-level), planned-expense checklist (paid/pending/skipped), carry-forward cash balance, and a person ledger (e.g. Mummy/Papa).
