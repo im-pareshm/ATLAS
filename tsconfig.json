@@ -30,8 +30,8 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  // tests/ (Playwright) is excluded from the build typecheck: the specs currently
-  // reference page-object methods that do not exist and would fail `next build`.
-  // Playwright transpiles them itself. lib/__tests__ (Vitest) stays included.
+  // tests/ (Playwright) is excluded from the build typecheck — see KNOWN_ISSUES.md
+  // "Playwright suite". Do not remove without reading it. lib/__tests__ (Vitest)
+  // stays included.
   "exclude": ["node_modules", "tests"]
 }

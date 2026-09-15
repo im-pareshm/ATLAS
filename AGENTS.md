@@ -74,6 +74,11 @@ month's plan on last month's actuals.
 - **[IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md)** — scaffolding, Turso, Auth,
   folder structure, recurring-generation, deployment. **Its §2 (schema) and §9
   (build order) are superseded by DESIGN.md** — use DESIGN.md for those.
+- **[KNOWN_ISSUES.md](KNOWN_ISSUES.md)** — verified problems with a workaround in
+  place, and deliberately deferred fixes. **Skim it before starting work.** If
+  your task touches a listed item, fix it or update the entry in the same
+  commit; if you park a fix (an exclusion, a `.skip`, a workaround), add an
+  entry in the same commit as the workaround. Its rules are in the file itself.
 
 Don't duplicate the content of those docs here.
 
@@ -153,9 +158,12 @@ Two independent suites, deliberately kept from colliding:
   `isDueMonth`), `lib/money.ts` (INR formatting). `vitest.config.ts` scopes
   `include` to `lib/**/*.test.ts` so it never touches `tests/`.
 - **End-to-end (`tests/*.spec.ts`, run via `npm test`)** — Playwright, page-object
-  pattern (`tests/pages/`), against a real dev server + seeded local DB. Covers
-  auth, every screen, and accessibility. `playwright.config.ts`'s `testDir` is
-  scoped to `tests/` so it never touches `lib/__tests__`.
+  pattern (`tests/pages/`), against a real dev server + seeded local DB.
+  `playwright.config.ts`'s `testDir` is scoped to `tests/` so it never touches
+  `lib/__tests__`. **Only 5 of the 12 spec files currently work** (accessibility,
+  dashboard, dashboard-attention, navigation, recurring); the rest are broken
+  and `tests/` is excluded from the build typecheck because of it — see
+  KNOWN_ISSUES.md "Playwright suite" before touching anything under `tests/`.
 
 When you change money math or recurring-generation logic, add or update a case in
 `lib/__tests__/cash-math.test.ts` or `lib/__tests__/month.test.ts` first — they run
@@ -166,6 +174,6 @@ alone does not catch an arithmetic mistake.
 
 `.github/workflows/ci.yml` runs install → lint → build → `test:unit` on every PR
 and every push to `master`. The Playwright suite runs separately on pushes to
-`master` (browser install
-+ a full run is slower and needs a seeded DB, so it's not on the fast path for
-every commit).
+`master` (browser install + a full run is slower and needs a seeded DB, so it's
+not on the fast path for every commit). That `e2e` job fails until the Playwright
+suite is repaired — see KNOWN_ISSUES.md.
