@@ -1,0 +1,81 @@
+name: CI
+
+# Fast path (every PR, and every push to master): install, lint, typecheck-via-
+# build, and the dependency-free Vitest unit suite (lib/__tests__/). This is the
+# required check.
+#
+# Slow path (pushes to master only): the full Playwright end-to-end suite against a
+# real dev server + seeded local SQLite DB. Kept off the PR fast path because
+# installing browsers and running ~10 spec files is a couple of minutes, not
+# seconds — see AGENTS.md "Testing" for why the two suites are split this way.
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  build-lint-unit:
+    name: Install, lint, build, unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run lint
+
+      - name: Build (also the project's typecheck)
+        run: npm run build
+
+      - name: Unit tests (Vitest — lib/__tests__/)
+        run: npm run test:unit
+
+  e2e:
+    name: Playwright end-to-end
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    needs: build-lint-unit
+    env:
+      # A throwaway local file DB + non-secret values, scoped to this CI run only.
+      # Never the real Turso credentials — those stay in Vercel's env vars.
+      DATABASE_URL: "file:./prisma/dev.db"
+      TURSO_DATABASE_URL: "file:./prisma/dev.db"
+      TURSO_AUTH_TOKEN: ""
+      AUTH_SECRET: "ci-only-not-a-real-secret-0000000000000000000000000000"
+      ADMIN_EMAIL: "test@atlas.local"
+      ADMIN_PASSWORD: "atlas-dev-1234"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Apply migrations to a fresh local DB
+        run: npm run db:deploy
+
+      - name: Seed test account + default categories
+        run: npm run db:seed
+
+      - name: Run Playwright (Chromium only — CI doesn't need the full device matrix)
+        run: npx playwright test --project=chromium
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14
