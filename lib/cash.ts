@@ -1,23 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import { monthRange, type YearMonth } from "@/lib/month";
+import { summarizeMonthCash, type MonthCashInputs, type MonthSummary } from "@/lib/cash-math";
+
+export type { MonthSummary } from "@/lib/cash-math";
 
 const KNOWN_KINDS = ["KNOWN_EXPENSE", "SAVINGS"];
-
-export type MonthSummary = {
-  income: number;
-  additional: number;
-  carryIn: number;
-  received: number;
-  moneyIn: number;
-  knownPaid: number;
-  knownPlanned: number;
-  discretionary: number;
-  given: number;
-  moneyOut: number;
-  remaining: number;
-  stillToPay: number;
-  cap: number;
-};
 
 const sum = (agg: { _sum: { amount: number | null } }) => agg._sum.amount ?? 0;
 
@@ -25,6 +12,11 @@ const sum = (agg: { _sum: { amount: number | null } }) => agg._sum.amount ?? 0;
  * Integrated monthly cash math (see UI_DESIGN_GUIDE.md §7 / DESIGN.md §1).
  * Carry-in is derived from the opening balance plus the net of every prior month,
  * computed with range aggregates (no month-by-month walk).
+ *
+ * This function's only job is fetching the raw numbers from the DB; the actual
+ * arithmetic (carryIn/moneyIn/moneyOut/remaining) lives in the pure, unit-tested
+ * `summarizeMonthCash` (lib/cash-math.ts). If the money math itself looks wrong,
+ * look there first — it's the part that doesn't need a database to verify.
  */
 export async function computeMonthSummary(
   userId: string,
@@ -136,36 +128,22 @@ export async function computeMonthSummary(
     )
     .reduce((s, b) => s + b.income + b.additional, 0);
 
-  const carryIn =
-    openingBalance +
-    priorIncomeAdd +
-    sum(priorRecv) -
-    sum(priorKnownPaid) -
-    sum(priorDisc) -
-    sum(priorGiven);
-
-  const received = sum(recvAgg);
-  const given = sum(givenAgg);
-  const knownPaid = sum(knownPaidAgg);
-  const knownPlanned = sum(knownPlannedAgg);
-  const discretionary = sum(discAgg);
-
-  const moneyIn = income + additional + carryIn + received;
-  const moneyOut = knownPaid + discretionary + given;
-
-  return {
+  const inputs: MonthCashInputs = {
+    openingBalance,
     income,
     additional,
-    carryIn,
-    received,
-    moneyIn,
-    knownPaid,
-    knownPlanned,
-    discretionary,
-    given,
-    moneyOut,
-    remaining: moneyIn - moneyOut,
-    stillToPay: knownPlanned - knownPaid,
     cap,
+    knownPaid: sum(knownPaidAgg),
+    knownPlanned: sum(knownPlannedAgg),
+    discretionary: sum(discAgg),
+    received: sum(recvAgg),
+    given: sum(givenAgg),
+    priorIncomeAdd,
+    priorKnownPaid: sum(priorKnownPaid),
+    priorDiscretionary: sum(priorDisc),
+    priorReceived: sum(priorRecv),
+    priorGiven: sum(priorGiven),
   };
+
+  return summarizeMonthCash(inputs);
 }
