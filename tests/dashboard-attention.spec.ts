@@ -4,7 +4,13 @@ import bcrypt from "bcryptjs";
 import { PrismaClient } from "@prisma/client";
 import { PrismaLibSql } from "@prisma/adapter-libsql";
 
-process.loadEnvFile(".env");
+// Local runs read .env; CI has no .env and supplies the same variables through the
+// job's env block, so a missing file is not an error (same guard as prisma/seed.ts).
+try {
+  process.loadEnvFile(".env");
+} catch {
+  // env already provided
+}
 
 const databaseUrl =
   process.env.TURSO_DATABASE_URL ??
