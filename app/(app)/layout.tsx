@@ -64,14 +64,14 @@ export default async function AppLayout({
           </div>
 
           <div className="hidden border-t border-line/80 pb-[10px] pt-[8px] md:block">
-            <Nav />
+            <Nav variant="desktop" />
           </div>
         </div>
       </header>
 
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-ground/92 px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] pt-2 backdrop-blur-[12px] md:hidden">
         <div className="mx-auto max-w-[1160px] px-0">
-          <Nav />
+          <Nav variant="mobile" />
         </div>
       </div>
 

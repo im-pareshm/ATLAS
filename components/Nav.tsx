@@ -82,19 +82,29 @@ function MobileNavLink({
   );
 }
 
-export default function Nav() {
+// The app shell mounts this twice — once in the header (desktop, `hidden md:block`)
+// and once in the fixed bottom bar (phone, `md:hidden`) — so each instance renders
+// only its own variant. Rendering both here as well would put every link in the
+// DOM four times, which breaks any test or assistive tech that looks links up by id.
+export default function Nav({ variant }: { variant: "desktop" | "mobile" }) {
   const pathname = usePathname();
   const moreActive = MORE_LINKS.some((link) => isActivePath(pathname, link.href));
 
+  if (variant === "desktop") {
+    return (
+      <nav data-testid="nav" aria-label="Primary">
+        <div className="flex items-center gap-1 rounded-[16px] border border-line/90 bg-card/78 p-1.5 shadow-[0_12px_26px_-24px_rgba(26,28,40,0.38)] backdrop-blur-[8px]">
+          {ALL_LINKS.map((link) => (
+            <DesktopNavLink key={link.href} pathname={pathname} {...link} />
+          ))}
+        </div>
+      </nav>
+    );
+  }
+
   return (
     <nav data-testid="nav" aria-label="Primary">
-      <div className="hidden items-center gap-1 rounded-[16px] border border-line/90 bg-card/78 p-1.5 shadow-[0_12px_26px_-24px_rgba(26,28,40,0.38)] backdrop-blur-[8px] md:flex">
-        {ALL_LINKS.map((link) => (
-          <DesktopNavLink key={link.href} pathname={pathname} {...link} />
-        ))}
-      </div>
-
-      <div className="md:hidden">
+      <div>
         <div className="rounded-[20px] border border-line bg-card/96 p-2 shadow-card backdrop-blur-[10px]">
           <div className="grid grid-cols-5 gap-1.5">
             {PRIMARY_LINKS.map((link) => (
@@ -103,6 +113,7 @@ export default function Nav() {
 
             <details className="relative">
               <summary
+                data-testid="nav-more"
                 className={
                   "atlas-focus-ring flex min-h-[56px] cursor-pointer list-none items-center justify-center rounded-[14px] px-2 text-center text-[11.5px] font-semibold leading-tight transition-colors " +
                   (moreActive
