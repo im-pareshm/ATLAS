@@ -12,7 +12,7 @@ feature phases are implemented and verified locally; deployment to Vercel + Turs
 is the remaining step (see [DEPLOYMENT.md](DEPLOYMENT.md)).
 
 ### Commands
-- `npm run dev` — dev server (needs Node on PATH; installed at `C:\Program Files\nodejs`).
+- `npm run dev` — dev server on http://localhost:3000 (Node 24, the version CI runs; ≥ 20.9 works).
 - `npm run build` — production build + full typecheck (use this as the check).
 - `npm run lint` — ESLint.
 - `npm run test:unit` — Vitest, the pure-logic unit suite (see "Testing" below).
