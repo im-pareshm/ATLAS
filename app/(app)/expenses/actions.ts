@@ -67,20 +67,16 @@ export async function setCap(
     return { error: "Invalid month." };
   }
 
+  // cap = 0 means "no cap" (the UI falls back to the last-month suggestion). The
+  // Budget row also carries the month's income/additional, so clearing the cap must
+  // write 0 rather than delete the row — deleting it would erase those too.
   const cap = Number.isFinite(capRupees) && capRupees > 0 ? rupeesToPaise(capRupees) : 0;
 
-  if (cap > 0) {
-    await prisma.budget.upsert({
-      where: { userId_year_month: { userId, year, month } },
-      update: { cap },
-      create: { userId, year, month, cap },
-    });
-  } else {
-    // Clearing the cap removes the row (falls back to the last-month suggestion).
-    await prisma.budget
-      .delete({ where: { userId_year_month: { userId, year, month } } })
-      .catch(() => undefined);
-  }
+  await prisma.budget.upsert({
+    where: { userId_year_month: { userId, year, month } },
+    update: { cap },
+    create: { userId, year, month, cap },
+  });
 
   revalidatePath("/expenses");
   revalidatePath("/");
