@@ -24,6 +24,10 @@ is the remaining step (see [DEPLOYMENT.md](DEPLOYMENT.md)).
   client and will throw validation errors on new fields until bounced.
 - `npm run db:seed` — seed user + default groups/categories (reads
   `ADMIN_EMAIL`/`ADMIN_PASSWORD`).
+- `npm run db:copy-to-turso` — one-off copy of one account's rows (`ADMIN_EMAIL`)
+  from `prisma/dev.db` into the DB that `DATABASE_URL`/`TURSO_DATABASE_URL` names,
+  for going live with existing data; plain SQL, target must be empty, `--dry-run`
+  and `--replace` flags. Steps in DEPLOYMENT.md Part 5a.
 - `npm run db:studio` — Prisma Studio.
 
 ### Key implementation facts

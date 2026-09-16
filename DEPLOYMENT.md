@@ -132,29 +132,66 @@ Copy the output (a random string). Save it as your `AUTH_SECRET`.
 
 ---
 
-## Part 5 — Create your production login + starter data (3 min)
+## Part 5 — Your login (and, optionally, your data) (3–5 min)
 
-Run the seed **once, pointed at Turso**, to create your account (email + hashed
-password) and the default category groups. In PowerShell, from the project folder,
-paste this — **filling in your four values** first:
+Both steps below run from PowerShell in the project folder, **pointed at Turso**.
+Set these four values **once** in the window — they apply to 5a and 5b alike — filling
+in your own:
 
 ```powershell
 $env:DATABASE_URL     = "libsql://atlas-<yourorg>.turso.io"
 $env:TURSO_AUTH_TOKEN = "<the token from step 3b>"
 $env:ADMIN_EMAIL      = "you@example.com"
 $env:ADMIN_PASSWORD   = "<choose a strong password>"
+```
+
+> These `$env:` values only apply to this one PowerShell window and are **not**
+> saved — that's intentional. Your local `.env` (for local dev) is untouched.
+
+### 5a. (Optional) Bring your local data along
+
+If you've been using ATLAS locally and want those transactions, recurring
+templates, budgets, people and funds on the live site, copy them now — **before
+5b, while the Turso database is still empty**:
+
+```powershell
+npm run db:copy-to-turso -- --dry-run   # checks everything, writes nothing
+npm run db:copy-to-turso                # the real copy
+```
+
+Expected: a per-table row count ending in `✔ copied you@example.com (N rows)`.
+`ADMIN_EMAIL` decides whose rows go — only that account is copied, so the e2e
+test accounts that may sit in `prisma/dev.db` never reach production. Ids,
+dates and the links between recurring templates and their generated
+transactions are preserved verbatim, and the copy is a single transaction: it
+lands whole or not at all. (It reads `prisma/dev.db`; set `SOURCE_DATABASE_URL`
+to copy from a different local file.)
+
+The copy refuses to run if Turso already has data — e.g. you did 5b first.
+That's harmless: add `-- --replace` to wipe the app tables and copy afresh,
+then do 5b again.
+
+Skip this step to start production empty — 5b gives you the starter category
+groups either way.
+
+### 5b. Create your login / set the production password
+
+Run the seed **once**. It creates your account (email + hashed password) and the
+default category groups — or, if you did 5a, just sets that account's password to
+`ADMIN_PASSWORD` (your local password must not be reused for the live site):
+
+```powershell
 npm run db:seed
 ```
 
 Expected output: `✔ user: you@example.com` followed by the seeded groups. That email
-and password are what you'll log in with on the live site.
+and password are what you'll log in with on the live site. If you had deleted or
+renamed any of the default groups/categories locally, the seed re-adds them —
+tidy up on the **Categories** screen once you're logged in.
 
-**To change the password later**, repeat this Part with a new `ADMIN_PASSWORD` —
+**To change the password later**, repeat 5b with a new `ADMIN_PASSWORD` —
 re-running the seed against Turso rotates the existing account's password (there is
 no change-password screen in the app). Everything else the seed does is idempotent.
-
-> These `$env:` values only apply to this one PowerShell window and are **not**
-> saved — that's intentional. Your local `.env` (for local dev) is untouched.
 
 ---
 
@@ -177,7 +214,7 @@ Before clicking Deploy, expand **Environment Variables** and add these three
 | `AUTH_SECRET` | the string from Part 4 |
 
 (You do **not** need `DATABASE_URL`, `ADMIN_EMAIL`, or `ADMIN_PASSWORD` on Vercel —
-those were only for the local seed.)
+those were only for Part 5, run from your PC.)
 
 ### 6c. Deploy
 Click **Deploy** and wait for the build (~1–2 min). Expected: a success screen with
@@ -200,7 +237,13 @@ a link like `https://atlas-<something>.vercel.app`.
 ## Troubleshooting
 
 - **Login says "Invalid email or password"** → the account wasn't seeded, or you're
-  using different credentials. Re-run **Part 5** (check for typos in the email).
+  using different credentials. Re-run **Part 5b** (check for typos in the email).
+- **Copy says "Target already has data"** → Turso isn't empty (you ran 5b before 5a,
+  or are copying a second time). Re-run with `npm run db:copy-to-turso -- --replace`,
+  then run **5b** again.
+- **Copy says "Column mismatch"** → the tables on Turso are older than your local
+  schema. Follow "If you change the database schema" below to bring them up to
+  date, then copy again.
 - **App loads but errors on data / "no such table"** → the schema wasn't applied to
   Turso. Redo **Part 3c** and confirm with the `sqlite_master` query.
 - **500 error / "TURSO_DATABASE_URL is undefined"-type errors** → an env var is
