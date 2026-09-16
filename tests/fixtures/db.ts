@@ -12,7 +12,7 @@ interface DbWorkerFixtures {
   seedTestData: void;
 }
 
-export const test = base.extend<Record<string, never>, DbWorkerFixtures>({
+export const test = base.extend<object, DbWorkerFixtures>({
   // Reset database - runs once per worker
   resetDatabase: [async ({}, use, testInfo) => {
     if (testInfo.workerIndex === 0) {

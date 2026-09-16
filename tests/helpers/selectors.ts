@@ -12,16 +12,21 @@ export const Sel = {
     form: '[data-testid="login-form"]',
   },
 
+  // The shell renders a desktop nav (header) and a phone nav (bottom bar); only one
+  // is displayed at a time, so link selectors are scoped to the visible instance.
+  // On phones, funds/history/recurring/categories live inside the "More" menu and
+  // are visible only once it is open — see NavComponent.openMore().
   nav: {
-    container: '[data-testid="nav"]',
-    dashboard: '[data-testid="nav-dashboard"]',
-    known: '[data-testid="nav-known"]',
-    expenses: '[data-testid="nav-expenses"]',
-    people: '[data-testid="nav-people"]',
-    funds: '[data-testid="nav-funds"]',
-    history: '[data-testid="nav-history"]',
-    recurring: '[data-testid="nav-recurring"]',
-    categories: '[data-testid="nav-categories"]',
+    container: '[data-testid="nav"]:visible',
+    dashboard: '[data-testid="nav-dashboard"]:visible',
+    known: '[data-testid="nav-known"]:visible',
+    expenses: '[data-testid="nav-expenses"]:visible',
+    people: '[data-testid="nav-people"]:visible',
+    funds: '[data-testid="nav-funds"]:visible',
+    history: '[data-testid="nav-history"]:visible',
+    recurring: '[data-testid="nav-recurring"]:visible',
+    categories: '[data-testid="nav-categories"]:visible',
+    more: '[data-testid="nav-more"]:visible',
     themeToggle: '[data-testid="nav-theme-toggle"]',
     userMenu: '[data-testid="nav-user-menu"]',
     logout: '[data-testid="nav-logout"]',
@@ -72,8 +77,9 @@ export const Sel = {
     addAmount: '[data-testid="known-add-amount"]',
     addSubmit: '[data-testid="known-add-submit"]',
     addError: '[data-testid="known-add-error"]',
+    // Slug must match KnownExpenses.tsx: non-alphanumerics collapse to '-'.
     bucket: (name: string) =>
-      `[data-testid="known-bucket-${name.toLowerCase().replace(/\s+/g, '-')}"]`,
+      `[data-testid="known-bucket-${name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}"]`,
     bucketHeading: '[data-testid="known-bucket-heading"]',
     bucketTotal: '[data-testid="known-bucket-total"]',
     bucketItems: '[data-testid="known-bucket-items"]',
@@ -195,6 +201,7 @@ export const Sel = {
     templateStatus: '[data-testid="template-status"]',
     templateStatusBtn: '[data-testid="template-status-btn"]',
     templateEdit: '[data-testid="template-edit"]',
+    templateMore: '[data-testid="template-more"]',
     templateDelete: '[data-testid="template-delete"]',
     templateCadence: '[data-testid="template-cadence"]',
     templateNextDue: '[data-testid="template-next-due"]',

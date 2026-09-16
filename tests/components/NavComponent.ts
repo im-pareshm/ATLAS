@@ -13,6 +13,7 @@ export class NavComponent {
   readonly categories: Locator;
   readonly signOut: Locator;
   readonly themeToggle: Locator;
+  readonly more: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -26,6 +27,17 @@ export class NavComponent {
     this.categories = page.locator(Sel.nav.categories);
     this.signOut = page.locator(Sel.nav.logout);
     this.themeToggle = page.locator(Sel.nav.themeToggle);
+    this.more = page.locator(Sel.nav.more);
+  }
+
+  /** On the phone layout the secondary links sit in a collapsed "More" menu. */
+  async openMore() {
+    if (await this.more.isVisible()) {
+      const details = this.more.locator('xpath=..');
+      if ((await details.getAttribute('open')) === null) {
+        await this.more.click();
+      }
+    }
   }
 
   async clickDashboard() {
@@ -49,21 +61,25 @@ export class NavComponent {
   }
 
   async clickFunds() {
+    await this.openMore();
     await this.funds.click();
     await this.page.waitForURL('/funds');
   }
 
   async clickHistory() {
+    await this.openMore();
     await this.history.click();
     await this.page.waitForURL('/history');
   }
 
   async clickRecurring() {
+    await this.openMore();
     await this.recurring.click();
     await this.page.waitForURL('/recurring');
   }
 
   async clickCategories() {
+    await this.openMore();
     await this.categories.click();
     await this.page.waitForURL('/categories');
   }
@@ -78,11 +94,13 @@ export class NavComponent {
   }
 
   async expectActive(link: 'dashboard' | 'known' | 'expenses' | 'people' | 'funds' | 'history' | 'recurring' | 'categories') {
+    await this.openMore();
     const locator = this[link];
     await expect(locator).toHaveClass(/bg-mint-tint text-teal/);
   }
 
   async expectAllVisible() {
+    await this.openMore();
     await expect(this.dashboard).toBeVisible();
     await expect(this.known).toBeVisible();
     await expect(this.expenses).toBeVisible();

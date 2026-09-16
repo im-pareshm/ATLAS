@@ -168,17 +168,20 @@ export class RecurringTemplateRow {
     if (data.startAt !== undefined) {
       await editForm.locator(Sel.recurring.editStart(this.templateId)).fill(data.startAt);
     }
-    await editForm.locator(Sel.recurring.editSaveBtn).click();
+    // Save/Cancel live in the row's actions area, outside the <form> (they submit via form=).
+    await this.container.locator(Sel.recurring.editSaveBtn).click();
     await expect(editForm).not.toBeVisible();
   }
 
   async cancelEdit() {
     const editForm = this.container.locator(Sel.recurring.editForm(this.templateId));
-    await editForm.locator(Sel.recurring.editCancelBtn).click();
+    await this.container.locator(Sel.recurring.editCancelBtn).click();
     await expect(editForm).not.toBeVisible();
   }
 
   async clickDelete() {
+    // Delete lives in the row's "More actions" menu.
+    await this.container.locator(Sel.recurring.templateMore).click();
     await this.deleteBtn.click();
     await this.container.locator(Sel.recurring.deleteConfirm).click();
     await this.page.waitForLoadState('networkidle');

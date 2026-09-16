@@ -189,10 +189,22 @@ Two independent suites, deliberately kept from colliding:
 - **End-to-end (`tests/*.spec.ts`, run via `npm test`)** — Playwright, page-object
   pattern (`tests/pages/`), against a real dev server + seeded local DB.
   `playwright.config.ts`'s `testDir` is scoped to `tests/` so it never touches
-  `lib/__tests__`. **Only 5 of the 12 spec files currently work** (accessibility,
-  dashboard, dashboard-attention, navigation, recurring); the rest are broken
-  and `tests/` is excluded from the build typecheck because of it — see
-  KNOWN_ISSUES.md "Playwright suite" before touching anything under `tests/`.
+  `lib/__tests__`. `tests/` is part of the build typecheck. Six suites:
+  `auth`, `dashboard`, `dashboard-attention`, `navigation`, `recurring`,
+  `accessibility`. **No e2e coverage yet** for the expenses, known, people, funds,
+  history and categories screens — they have only the few `data-testid`s the
+  recurring suite needs. To add a screen: add `data-testid`s (the intended names
+  are already in `tests/helpers/selectors.ts`) → write or extend its page object →
+  write the spec. `recurring.spec.ts` + `pages/RecurringPage.ts` is the template.
+  Conventions the suite relies on: specs that count rows call
+  `resetTestUserData()` (`tests/helpers/db.ts`) in `beforeEach`; money strings
+  come from `lib/money.ts` via `tests/helpers/test-data.ts`, never reimplemented;
+  nav selectors are scoped `:visible` because the shell mounts a desktop and a
+  phone nav (`NavComponent.openMore()` handles the phone "More" menu).
+  **Run it against a throwaway DB**: the suite resets and seeds whatever
+  `DATABASE_URL`/`TURSO_DATABASE_URL` point at, so set both to e.g.
+  `file:./prisma/e2e.db` (plus `CI=1`, `ADMIN_EMAIL`/`ADMIN_PASSWORD` = the values
+  in `tests/helpers/test-data.ts`) — never run it pointed at your `dev.db`.
 
 When you change money math or recurring-generation logic, add or update a case in
 `lib/__tests__/cash-math.test.ts` or `lib/__tests__/month.test.ts` first — they run
@@ -204,5 +216,4 @@ alone does not catch an arithmetic mistake.
 `.github/workflows/ci.yml` runs install → lint → build → `test:unit` on every PR
 and every push to `main`. The Playwright suite runs separately on pushes to
 `main` (browser install + a full run is slower and needs a seeded DB, so it's
-not on the fast path for every commit). That `e2e` job fails until the Playwright
-suite is repaired — see KNOWN_ISSUES.md.
+not on the fast path for every commit).

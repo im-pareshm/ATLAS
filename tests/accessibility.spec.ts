@@ -92,7 +92,7 @@ test.describe('Accessibility', () => {
     test('should have landmarks', async ({ authenticatedPage }) => {
       await expect(authenticatedPage.locator('main')).toBeVisible();
       await expect(authenticatedPage.locator('header')).toBeVisible();
-      await expect(authenticatedPage.locator('nav')).toBeVisible();
+      await expect(authenticatedPage.getByRole('navigation')).toBeVisible();
     });
   });
 });

@@ -253,30 +253,33 @@ export default function OtherSpending({
         </p>
       ) : (
         <>
-          <div className="flex flex-col">
+          <div data-testid="expenses-list" className="flex flex-col">
             {rows.length === 0 ? (
               <p className="py-3 text-[12.5px] text-faint">
                 Nothing logged yet this month.
               </p>
             ) : (
-              rows.map((r) => (
+              rows.map((r, i) => (
                 <div
                   key={r.id}
+                  data-testid={`expenses-txn-${i}`}
                   className="flex flex-wrap items-center gap-2 border-t border-divider py-3 sm:flex-nowrap sm:gap-3"
                 >
                   <span className="num w-[24px] text-[11px] text-icondim">
                     {r.n}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <div className="truncate text-[13.5px] font-medium">
+                    <div data-testid="txn-description" className="truncate text-[13.5px] font-medium">
                       {r.description || (
                         <span className="text-faint">(no description)</span>
                       )}
                     </div>
-                    <div className="text-[11.5px] text-faint">{r.categoryName}</div>
+                    <div data-testid="txn-category" className="text-[11.5px] text-faint">
+                      {r.categoryName}
+                    </div>
                   </div>
                   <div className="ml-auto flex w-full items-center justify-end gap-2 sm:w-auto">
-                    <span className="num text-[13px] font-semibold">
+                    <span data-testid="txn-amount" className="num text-[13px] font-semibold">
                       {formatINR(r.amountPaise)}
                     </span>
                     <RemoveButton id={r.id} />

@@ -158,7 +158,7 @@ export function TemplateRow({
               <>
                 <button
                   data-testid="template-edit-submit"
-                  type="button"
+                  type="submit"
                   form={formId}
                   disabled={pending}
                   className={primaryBtn}
@@ -216,6 +216,7 @@ export function TemplateRow({
                   Edit
                 </button>
                 <button
+                  data-testid="template-more"
                   type="button"
                   onClick={() => setMenuOpen((open) => !open)}
                   aria-haspopup="menu"
