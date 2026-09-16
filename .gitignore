@@ -44,11 +44,13 @@ yarn-error.log*
 .env*
 !.env.example
 
-# local libSQL dev database
+# local libSQL databases (dev, e2e throwaways, and anything that lands at the root)
 /prisma/dev.db
 /prisma/dev.db-journal
 /prisma/*.db
 /prisma/*.db-*
+/*.db
+/*.db-*
 
 # vercel
 .vercel

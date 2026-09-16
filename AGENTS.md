@@ -113,8 +113,11 @@ Which doc owns what:
 | Feature scope (what's in v1, what's deferred) | PRD.md |
 | A fix you're parking (an exclusion, a `.skip`, a workaround) | KNOWN_ISSUES.md — its rules are in the file |
 
-README.md is still the `create-next-app` boilerplate — nothing owns it yet. Don't
-add setup steps there; they live in DEPLOYMENT.md until README is rewritten.
+README.md is the public front door: what the app is, the money model in brief, the
+stack, a fresh-clone quick-start, and the doc map. Update it when the stack, the
+local setup steps, the test suites, or the set of docs changes — but keep detail
+in the owning doc (DEPLOYMENT.md for deploying, AGENTS.md for conventions) and
+link to it rather than duplicating.
 
 ## Confirmed Tech Stack (from PRD.md §8)
 
