@@ -2,11 +2,14 @@ import { test, expect } from './fixtures/auth';
 import { RecurringPage } from './pages/RecurringPage';
 import { rupeesToPaise, createRecurringData } from './helpers/test-data';
 import { Sel } from './helpers/selectors';
+import { resetTestUserData } from './helpers/db';
 
 test.describe('Recurring Templates', () => {
   let recurringPage: RecurringPage;
 
   test.beforeEach(async ({ authenticatedPage }) => {
+    // Every test here counts rows, so start each one from a clean account.
+    await resetTestUserData();
     recurringPage = new RecurringPage(authenticatedPage);
     await recurringPage.goto();
   });
@@ -48,21 +51,21 @@ test.describe('Recurring Templates', () => {
     test('should create a 6-month recurring template', async () => {
       const templateData = createRecurringData({
         description: 'Policy Premium',
-        category: 'Insurance',
+        category: 'Utilities',
         amount: 12000,
         intervalMonths: 6,
       });
       await recurringPage.createTemplate(templateData);
 
       const template = await recurringPage.getTemplate('policy-premium');
-      await template.expectValues('Policy Premium', 'Insurance', rupeesToPaise(12000), true);
+      await template.expectValues('Policy Premium', 'Utilities', rupeesToPaise(12000), true);
       await expect(template.container.locator(Sel.recurring.templateCadence)).toContainText('Every 6 months');
     });
 
     test('should create a yearly recurring template', async () => {
       const templateData = createRecurringData({
         description: 'Health Insurance',
-        category: 'Insurance',
+        category: 'Utilities',
         amount: 18000,
         intervalMonths: 12,
       });
@@ -73,9 +76,10 @@ test.describe('Recurring Templates', () => {
       await expect(template.container.locator(Sel.recurring.templateNextDue)).toContainText(/\w{3} \d{4}/);
     });
 
-    test('should show error when required fields missing', async () => {
+    test('should show error when the amount is missing', async () => {
       const form = recurringPage.createForm;
-      await form.locator(Sel.recurring.createAmount).fill('100');
+      // Description is optional; amount is the field the server validates.
+      await form.locator(Sel.recurring.createDescription).fill('No amount');
       await form.locator(Sel.recurring.createSubmit).click();
 
       await expect(form.locator(Sel.recurring.createError)).toBeVisible();
@@ -89,7 +93,7 @@ test.describe('Recurring Templates', () => {
 
       await template.toggleStatus();
       await template.expectValues('Test', '', rupeesToPaise(100), false);
-      await expect(template.statusBtn).toContainText('Paused');
+      await expect(template.statusBtn).toContainText('Resume'); // the badge reads Paused; the button offers the opposite action
     });
 
     test('should activate paused template', async () => {
@@ -132,7 +136,7 @@ test.describe('Recurring Templates', () => {
 
     test('should edit template interval and first due month', async () => {
       await recurringPage.createTemplate(
-        createRecurringData({ description: 'Insurance Plan', category: 'Insurance', amount: 1000 }),
+        createRecurringData({ description: 'Insurance Plan', category: 'Utilities', amount: 1000 }),
       );
       const template = await recurringPage.getTemplate('insurance-plan');
 
@@ -175,13 +179,13 @@ test.describe('Recurring Templates', () => {
       const emiBucket = await knownPage.getBucket('EMI & loans');
       await emiBucket.expectItemCount(1);
 
-      const items = await emiBucket.container.locator('[data-testid^="item-"]').all();
-      const item = await emiBucket.getItem((await items[0].getAttribute('data-testid'))!.replace('item-', ''));
+      const items = await emiBucket.container.locator('[data-testid^="known-item-"]').all();
+      const item = await emiBucket.getItem((await items[0].getAttribute('data-testid'))!.replace('known-item-', ''));
       await item.expectStatus('PENDING'); // Known expenses generated as PENDING
     });
 
     test('should generate discretionary items as PAID', async ({ authenticatedPage }) => {
-      await recurringPage.createTemplate(createRecurringData({ description: 'Monthly Sub', category: 'Streaming', amount: 500 }));
+      await recurringPage.createTemplate(createRecurringData({ description: 'Coffee', category: 'Food', amount: 500 }));
 
       const { NavComponent } = await import('./components/NavComponent');
       const nav = new NavComponent(authenticatedPage);
@@ -193,7 +197,7 @@ test.describe('Recurring Templates', () => {
 
       await expensesPage.expectTransactionCount(1);
       const txn = await expensesPage.getTransaction(0);
-      await txn.expectValues('Monthly Sub', 'Streaming', rupeesToPaise(500));
+      await txn.expectValues('Coffee', 'Food', rupeesToPaise(500));
     });
   });
 

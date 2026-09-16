@@ -69,36 +69,9 @@ export const DEFAULT_CATEGORIES = {
   Miscellaneous: ["Gifts", "Donations", "Repairs", "Other"],
 } as const;
 
-export const RUPEE_SYMBOL = "\u20B9";
-
-export function rupeesToPaise(rupees: number): number {
-  return Math.round(rupees * 100);
-}
-
-export function paiseToRupees(paise: number): number {
-  return paise / 100;
-}
-
-export function formatINR(paise: number): string {
-  const rupees = paiseToRupees(paise);
-  const sign = rupees < 0 ? "-" : "";
-  const abs = Math.abs(rupees);
-  const formatted = abs.toLocaleString("en-IN", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-  return `${sign}${RUPEE_SYMBOL}${formatted}`;
-}
-
-export function formatINRPlain(paise: number): string {
-  const rupees = paiseToRupees(paise);
-  const sign = rupees < 0 ? "-" : "";
-  const abs = Math.abs(rupees);
-  return `${sign}${abs.toLocaleString("en-IN", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
-}
+// Money helpers come straight from the app so the tests can never drift from the
+// real formatting (whole rupees, Indian grouping, U+2212 minus) — see lib/money.ts.
+export { rupeesToPaise, paiseToRupees, formatINR } from "../../lib/money";
 
 export function createGroupData(
   overrides: Partial<{

@@ -131,11 +131,19 @@ function ItemRow({ item, color }: { item: ItemDTO; color: string }) {
   const skipped = item.status === "SKIPPED";
 
   return (
-    <div className="grid grid-cols-[32px_minmax(0,1fr)] gap-x-3 gap-y-2 border-t border-divider py-3 sm:grid-cols-[32px_minmax(0,1fr)_auto] sm:items-center">
+    <div
+      data-testid={`known-item-${item.id}`}
+      className="grid grid-cols-[32px_minmax(0,1fr)] gap-x-3 gap-y-2 border-t border-divider py-3 sm:grid-cols-[32px_minmax(0,1fr)_auto] sm:items-center"
+    >
       <StatusButton id={item.id} status={item.status} color={color} />
 
       <div className="min-w-0">
+        {/* Status is otherwise conveyed only visually (tick / strikethrough). */}
+        <span data-testid="item-status" className="sr-only">
+          {item.status}
+        </span>
         <div
+          data-testid="item-description"
           className="text-[14px] font-semibold leading-[1.25]"
           style={
             skipped
@@ -145,11 +153,14 @@ function ItemRow({ item, color }: { item: ItemDTO; color: string }) {
         >
           {item.label}
         </div>
-        <div className="mt-1 text-[11.5px] text-faint">{item.categoryName}</div>
+        <div data-testid="item-category" className="mt-1 text-[11.5px] text-faint">
+          {item.categoryName}
+        </div>
       </div>
 
       <div className="col-start-2 flex items-center justify-between gap-2 sm:col-start-3 sm:justify-end sm:gap-1">
         <span
+          data-testid="item-amount"
           className="num text-[13.5px] font-bold text-strong"
           style={
             skipped
@@ -271,6 +282,11 @@ function AddItemForm({
   );
 }
 
+// Stable hook for tests: "EMI & loans" -> known-bucket-emi-loans (see tests/helpers/selectors.ts).
+function bucketTestId(name: string): string {
+  return `known-bucket-${name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
+}
+
 function BucketHeader({ bucket }: { bucket: BucketDTO }) {
   const remainingCount = Math.max(0, bucket.activeCount - bucket.doneCount);
   const accentColor = bucket.color;
@@ -367,6 +383,7 @@ export default function KnownExpenses({
         {buckets.map((bucket) => (
           <div
             key={bucket.id}
+            data-testid={bucketTestId(bucket.name)}
             className="rounded-card bg-card p-[20px_20px_18px] shadow-card"
           >
             <BucketHeader bucket={bucket} />

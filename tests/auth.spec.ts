@@ -18,7 +18,7 @@ test.describe('Authentication', () => {
 
       // Should redirect to dashboard
       await expect(page).toHaveURL('/');
-      await expect(page.locator(Sel.dashboard.moneyInCard)).toBeVisible();
+      await expect(page.locator(Sel.dashboard.moneyIn)).toBeVisible();
     });
 
     test('should show error with invalid email', async ({ page }) => {
@@ -35,11 +35,14 @@ test.describe('Authentication', () => {
       await loginPage.expectError('Invalid email or password.');
     });
 
-    test('should show error with empty credentials', async ({ page }) => {
+    test('should not submit with empty credentials', async ({ page }) => {
+      // Both inputs are `required`, so the browser blocks the submit client-side;
+      // the server action (and its error message) never runs.
       const loginPage = new LoginPage(page);
       await loginPage.goto();
       await loginPage.login('', '');
-      await loginPage.expectError('Invalid email or password.');
+      expect(await loginPage.isBlockedByBrowserValidation()).toBe(true);
+      await expect(page).toHaveURL('/login');
     });
   });
 
@@ -48,12 +51,13 @@ test.describe('Authentication', () => {
       const page = authenticatedPage;
       await page.reload();
       await expect(page).toHaveURL('/');
-      await expect(page.locator(Sel.dashboard.moneyInCard)).toBeVisible();
+      await expect(page.locator(Sel.dashboard.moneyIn)).toBeVisible();
     });
 
     test('should redirect to login when accessing protected route without session', async ({ page }) => {
       await page.goto('/known');
-      await expect(page).toHaveURL('/login');
+      // Auth.js appends ?callbackUrl=<original> when it bounces to the sign-in page.
+      await expect(page).toHaveURL(/\/login(\?.*)?$/);
     });
 
     test('should redirect logged-in user away from login page', async ({ authenticatedPage }) => {
@@ -66,12 +70,12 @@ test.describe('Authentication', () => {
   test.describe('Sign Out', () => {
     test('should sign out and redirect to login', async ({ authenticatedPage }) => {
       const page = authenticatedPage;
-      await page.click(Sel.nav.signOut);
+      await page.click(Sel.nav.logout);
       await expect(page).toHaveURL('/login');
 
       // Verify cannot access protected routes
       await page.goto('/');
-      await expect(page).toHaveURL('/login');
+      await expect(page).toHaveURL(/\/login(\?.*)?$/);
     });
   });
 });
