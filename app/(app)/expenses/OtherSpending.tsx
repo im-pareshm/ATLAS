@@ -51,7 +51,8 @@ function CapEditor({
   suggestedCapPaise: number;
 }) {
   const [, action, pending] = useActionState<ActionState, FormData>(setCap, {});
-  const capRupees = capPaise != null ? Math.round(capPaise / 100) : "";
+  // 0 (or no row) = no cap: show the field empty so the suggestion placeholder reads.
+  const capRupees = capPaise != null && capPaise > 0 ? Math.round(capPaise / 100) : "";
   const suggestion = Math.round(suggestedCapPaise / 100);
   const inputId = useId();
 

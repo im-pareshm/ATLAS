@@ -29,7 +29,97 @@ Closing       = RemainingCash → becomes next month's CarryIn
 UI shows `Discretionary spent / cap` (e.g. 4,085/4,000, over-cap flagged) as a separate manual target. The dashboard hero card shows `SafeToSpend` with `StillToPay` as its caption ("after ₹… in planned bills") and `RemainingCash` beneath it as "Available cash".
 
 ## Data model (changes vs the original flat schema)
-The live schema is [prisma/schema.prisma](prisma/schema.prisma); the snippets below carry the rationale and omit `createdAt`/`updatedAt` and most indexes.
+The live schema is [prisma/schema.prisma](prisma/schema.prisma); the snippets below carry the rationale and omit `createdAt`/`updatedAt` and most indexes. How the app reads and writes these tables — the Server Actions and shared read helpers — is in [API.md](API.md).
+
+### Entity relationships
+
+Every table carries a `userId` (single user in v1, but multi-user must not need a rewrite). Kinds, statuses and directions are `String` columns, not enums.
+
+```mermaid
+erDiagram
+  User ||--o{ CategoryGroup : owns
+  User ||--o{ Budget : "one row per month"
+  User ||--o{ Person : owns
+  User ||--o{ Fund : owns
+  CategoryGroup ||--o{ Category : "kind lives on the group"
+  Category ||--o{ Transaction : categorises
+  Category ||--o{ RecurringTransaction : categorises
+  RecurringTransaction |o--o{ Transaction : "generates (SetNull on delete)"
+  Person ||--o{ PersonLedgerEntry : has
+
+  User {
+    string id PK
+    string email UK
+    string passwordHash
+    int openingBalance "paise; seeds carry-forward"
+    int openingBalanceYear
+    int openingBalanceMonth
+  }
+  CategoryGroup {
+    string id PK
+    string name "unique per user"
+    string kind "INCOME | KNOWN_EXPENSE | SAVINGS | DISCRETIONARY"
+    int sortOrder
+  }
+  Category {
+    string id PK
+    string groupId FK
+    string name "unique per user"
+    boolean isDefault "seeded starter"
+    int sortOrder
+  }
+  Transaction {
+    string id PK
+    string categoryId FK
+    datetime date "UTC; 1st of month if not current"
+    int amount "paise"
+    string description
+    string status "PENDING | PAID | SKIPPED"
+    string recurringSourceId FK "nullable; unique with date"
+  }
+  RecurringTransaction {
+    string id PK
+    string categoryId FK
+    int amount "paise"
+    string description
+    int intervalMonths "1 2 3 4 6 12"
+    int startYear
+    int startMonth
+    boolean isActive
+    int lastGeneratedYear "null until first run"
+    int lastGeneratedMonth
+  }
+  Budget {
+    string id PK
+    int year "unique with month per user"
+    int month
+    int cap "paise; 0 = no cap"
+    int income "paise"
+    int additional "paise"
+  }
+  Person {
+    string id PK
+    string name "unique per user"
+  }
+  PersonLedgerEntry {
+    string id PK
+    string personId FK
+    datetime date "stamped on create and on settle"
+    int amount "paise"
+    string direction "GIVEN | RECEIVED"
+    string description
+    boolean pending "excluded from cash math until settled"
+    string linkedTxnId "UNUSED - see KNOWN_ISSUES.md"
+  }
+  Fund {
+    string id PK
+    string name "unique per user"
+    int balance "paise; snapshot, not in cash math"
+    int sortOrder
+  }
+```
+
+Not drawn, to keep it readable: `userId` on every table (all cascade from `User`), and `PersonLedgerEntry.userId`. Deleting a `Category` is refused by the app while any transaction or template references it (no cascade); deleting a `Person` cascades to its entries.
 
 Kinds, statuses and directions. libSQL/SQLite has no enums, so these are `String` columns validated in the app layer (`lib/constants.ts` + `lib/validations.ts`):
 ```

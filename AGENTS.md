@@ -78,6 +78,10 @@ month's plan on last month's actuals.
 - **[IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md)** — scaffolding, Turso, Auth,
   folder structure, recurring-generation, deployment. **Its §2 (schema) and §9
   (build order) are superseded by DESIGN.md** — use DESIGN.md for those.
+- **[API.md](API.md)** — the mutation surface (every Server Action: fields,
+  validation, effect, what it revalidates), the shared read helpers, the one HTTP
+  route, and the conventions all of them follow. Read it before adding or
+  changing an action.
 - **[KNOWN_ISSUES.md](KNOWN_ISSUES.md)** — verified problems with a workaround in
   place, and deliberately deferred fixes. **Skim it before starting work.** If
   your task touches a listed item, fix it or update the entry in the same
@@ -98,7 +102,8 @@ Which doc owns what:
 
 | If you change… | Update |
 |---|---|
-| Prisma schema, data model, money model | DESIGN.md (authoritative); the "Data Model" summary here |
+| Prisma schema, data model, money model | DESIGN.md (authoritative — snippets **and** the ER diagram); the "Data Model" summary here |
+| A Server Action, a validation schema, a `lib/` read helper, or an auth/route change | API.md (the action tables, Reads, HTTP routes) |
 | The cash formula (`lib/cash-math.ts`) or recurring generation | "Key Architectural Decisions" here; UI_DESIGN_GUIDE.md §7; DESIGN.md "Per-month math"; the header comment in `lib/cash-math.ts`; a case in `lib/__tests__/` |
 | A screen's behaviour, the app shell (nav, header, theme), or a user-facing workflow | DESIGN.md "Screens" / "Navigation & theme"; USER_GUIDE.md |
 | Visual tokens, typography, number formatting | UI_DESIGN_GUIDE.md; the "UI / visual spec" summary here |
@@ -108,12 +113,16 @@ Which doc owns what:
 | Feature scope (what's in v1, what's deferred) | PRD.md |
 | A fix you're parking (an exclusion, a `.skip`, a workaround) | KNOWN_ISSUES.md — its rules are in the file |
 
-README.md is still the `create-next-app` boilerplate — nothing owns it yet. Don't
-add setup steps there; they live in DEPLOYMENT.md until README is rewritten.
+README.md is the public front door: what the app is, the money model in brief, the
+stack, a fresh-clone quick-start, and the doc map. Update it when the stack, the
+local setup steps, the test suites, or the set of docs changes — but keep detail
+in the owning doc (DEPLOYMENT.md for deploying, AGENTS.md for conventions) and
+link to it rather than duplicating.
 
 ## Confirmed Tech Stack (from PRD.md §8)
 
-- **Next.js + TypeScript** — single app, frontend + API routes together.
+- **Next.js + TypeScript** — single app. Server Components read, Server Actions
+  mutate; the only HTTP route is Auth.js's (see API.md).
 - **Tailwind CSS** for styling.
 - **Prisma + Turso** (hosted SQLite-compatible DB) for persistence.
 - **Auth.js (NextAuth)** with a Credentials provider, backed by a `User` table
