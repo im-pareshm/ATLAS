@@ -129,7 +129,7 @@ incantation. CI runs the unit suite on every PR and the e2e suite on every push 
 | [API.md](API.md) | Every Server Action, the read helpers, and the conventions they share |
 | [UI_DESIGN_GUIDE.md](UI_DESIGN_GUIDE.md) | Visual spec: palette, type, components, the dashboard layout |
 | [DEPLOYMENT.md](DEPLOYMENT.md) | Step-by-step Vercel + Turso deployment |
-| [AGENTS.md](AGENTS.md) | Working conventions for contributors and coding agents: commands, architecture decisions to preserve, testing, which doc owns what |
+| [AGENTS.md](AGENTS.md) | Working conventions for contributors and coding agents: the git workflow (a branch per change, no direct pushes to `main`), commands, architecture decisions to preserve, testing, which doc owns what |
 | [KNOWN_ISSUES.md](KNOWN_ISSUES.md) | Verified problems that are parked, with a fix plan each |
 
 ## Status
