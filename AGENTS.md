@@ -66,6 +66,36 @@ is the remaining step (see [DEPLOYMENT.md](DEPLOYMENT.md)).
   out as CRLF and normalizes them back on commit, so git's "LF will be replaced
   by CRLF" warnings are harmless. Write LF; don't add CRLF deliberately.
 
+## Git workflow
+
+**Never commit or push to `main`.** Every change — a feature, a doc edit, a
+one-line typo fix — goes on its own branch and reaches `main` through a pull
+request. `main` is what Vercel deploys and what the e2e job runs against, so a
+direct push skips the PR check and can break the live app.
+
+1. **Branch before the first edit.** `git switch -c <type>/<short-description>`,
+   using the prefixes this repo already uses: `feat/`, `fix/`, `refactor/`,
+   `perf/`, `docs/`, `test/`, `ci/`, `chore/`, `deploy/`. Run
+   `git branch --show-current` at the start of a task — before you edit, not
+   after you commit.
+2. **Commit on the branch**, in logical pieces. A code fix and the doc update it
+   forces belong in one commit (see "Docs are part of the change"); unrelated
+   fixes belong in separate ones. Stage deliberately — `git add -A` will sweep up
+   any unrelated work in progress that happens to be in the tree.
+3. **Push the branch and open a PR.** The fast CI path (lint, build, unit tests)
+   runs on every PR; that is the check that must be green.
+4. **Merging is the repo owner's call.** Don't merge the PR, don't merge your
+   branch into `main` locally, and never force-push `main`. Say the work is ready
+   and stop there.
+
+Already committed on `main` by mistake? Nothing is lost. With a clean working
+tree: `git log --oneline origin/main..main` to see exactly what would move,
+`git branch <type>/<name>` to save those commits, `git reset --hard origin/main`
+to put `main` back, then `git switch <type>/<name>` to carry on.
+
+Ask first before rebasing or amending anything already pushed, deleting a branch,
+or rewriting history.
+
 ## What This Project Is
 
 **ATLAS** (**A**daptive **T**racking & **L**edger **A**nalysis **S**ystem) is a
@@ -116,6 +146,7 @@ Which doc owns what:
 | Test setup or which suites exist | "Testing" and "CI" here; KNOWN_ISSUES.md if coverage is parked |
 | Feature scope (what's in v1, what's deferred) | PRD.md |
 | A fix you're parking (an exclusion, a `.skip`, a workaround) | KNOWN_ISSUES.md — its rules are in the file |
+| Branch naming, PR or release conventions | "Git workflow" here |
 
 README.md is the public front door: what the app is, the money model in brief, the
 stack, a fresh-clone quick-start, and the doc map. Update it when the stack, the
