@@ -9,7 +9,7 @@ import {
 } from "@/lib/month";
 import { resolveActiveMonth } from "@/lib/active-month";
 import { formatINR } from "@/lib/money";
-import { computeMonthSummary, type MonthSummary } from "@/lib/cash";
+import { computeMonthSummaries, type MonthSummary } from "@/lib/cash";
 import MonthSwitcher from "@/components/MonthSwitcher";
 import MonthCookieSync from "@/components/MonthCookieSync";
 
@@ -28,9 +28,9 @@ export default async function HistoryPage({
   const months: YearMonth[] = Array.from({ length: MONTHS_BACK }, (_, i) =>
     addMonths(anchor, -i),
   );
-  const summaries = await Promise.all(
-    months.map((ym) => computeMonthSummary(userId, ym)),
-  );
+  // One ledger load covers all six months (see lib/cash.ts on why this is not
+  // six separate calls).
+  const summaries = await computeMonthSummaries(userId, months);
   const rows = months.map((ym, i) => ({ ym, s: summaries[i] }));
   const maxOut = Math.max(1, ...rows.map((r) => r.s.moneyOut));
 

@@ -172,6 +172,18 @@ needs a database).
 - **No raw SQLite file:** the DB is Turso (hosted), not a local `.db` file,
   because Vercel's filesystem is ephemeral and a local SQLite file would not
   survive redeploys.
+- **Count DB round trips, not queries:** `@prisma/adapter-libsql` serialises every
+  query through a single mutex, and against Turso each one is its own HTTPS
+  request. `Promise.all` over Prisma calls therefore buys *no* parallelism — the
+  round trips just queue, and page latency is `queries × RTT`. This is why
+  `lib/cash.ts` loads the user's whole history once, bucketed by month
+  (`loadCashLedger`, a fixed 4 queries for any number of months), instead of
+  running per-month aggregates, and why `lib/recurring.ts` selects scalars only
+  on its hot path and batches writes with `createMany`. Adding a nested relation
+  `select` or a per-month loop quietly multiplies round trips: the 6-month
+  history page was 72 of them (~14s in production) before this shape. Note that
+  SQLite has no `skipDuplicates`, so batched inserts need the P2002 fallback that
+  `ensureRecurringTransactionsGenerated` keeps.
 
 ## Data Model (see DESIGN.md for the authoritative Prisma schema)
 

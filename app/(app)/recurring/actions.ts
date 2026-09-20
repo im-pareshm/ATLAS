@@ -3,7 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { rupeesToPaise } from "@/lib/money";
-import { ensureRecurringTransactionsGenerated } from "@/lib/recurring";
+import {
+  ensureRecurringTransactionsGenerated,
+  invalidateRecurringMemo,
+} from "@/lib/recurring";
 import { requireUserId } from "@/lib/session";
 import { recurringSchema, recurringUpdateSchema } from "@/lib/validations";
 
@@ -75,7 +78,8 @@ export async function createRecurring(
     },
   });
 
-  await ensureRecurringTransactionsGenerated(userId);
+  // force: the per-process memo must not hide a template created just now.
+  await ensureRecurringTransactionsGenerated(userId, { force: true });
   revalidateAll();
   return { ok: true };
 }
@@ -118,6 +122,9 @@ export async function updateRecurring(
     },
   });
 
+  // Start month / interval may now imply different due months, so let the next
+  // render re-check instead of trusting the memo.
+  invalidateRecurringMemo(userId);
   revalidateAll();
   return { ok: true };
 }
@@ -136,7 +143,9 @@ export async function toggleRecurring(formData: FormData): Promise<void> {
     data: { isActive: !t.isActive },
   });
 
-  if (!t.isActive) await ensureRecurringTransactionsGenerated(userId);
+  if (!t.isActive) {
+    await ensureRecurringTransactionsGenerated(userId, { force: true });
+  }
   revalidateAll();
 }
 
